@@ -1,0 +1,22 @@
+#ifndef RAYMARCHER_H
+#define RAYMARCHER_H
+
+#include "scene.h"
+#include "color.h"
+#include <vector>
+
+class Raymarcher {
+public:
+    Raymarcher();
+
+    void render(const Scene& scene, std::vector<std::vector<Color>>& framebuffer);
+
+private:
+    Color trace(const Scene& scene, const Ray& ray);
+    Color shade(const Scene& scene, const Vector3& point, const Vector3& normal, const Color& object_color, const Ray& ray);
+    Color getBackgroundColor(const Ray& ray) const;
+    bool shadow(const Scene& scene, const Vector3& point, const Light& light);
+    const float EPSILON = 1e-4;
+};
+
+#endif // RAYMARCHER_H
