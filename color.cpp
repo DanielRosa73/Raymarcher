@@ -41,3 +41,14 @@ Color Color::operator/(float scalar) const {
     float new_b = m_b / scalar;
     return Color(new_r,new_g,new_b);
 }
+
+Color& Color::operator*=(const Color& other) {
+    m_r *= other.m_r;
+    m_g *= other.m_g;
+    m_b *= other.m_b;
+    return *this;
+}
+
+float Color::length() const {
+    return std::sqrt(m_r * m_r + m_g * m_g + m_b * m_b);
+}

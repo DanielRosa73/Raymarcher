@@ -43,9 +43,9 @@ int main() {
     Camera camera(Vector3(0.0f, 0.0f, 5.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
     Light light(Vector3(5.0f, 5.0f, 5.0f), Color(1.0f, 1.0f, 1.0f));
 
-    Sphere sphere1(Vector3(-1.0f, 0.5f, -3.0f), 0.5f, Color(0.8f, 0.2f, 0.2f));
-    Sphere sphere2(Vector3(1.0f, 0.5f, -5.0f), 0.5f, Color(0.2f, 0.8f, 0.2f));
-    Sphere sphere3(Vector3(0.0f, 1.5f, -7.0f), 0.5f, Color(0.2f, 0.2f, 0.8f));
+    Sphere sphere1(Vector3(-1.0f, 0.5f, -3.0f), 0.5f, Color(0.8f, 0.2f, 0.2f), 0.9f);
+    Sphere sphere2(Vector3(-1.5f, 0.5f, -3.5f), 0.5f, Color(0.2f, 0.8f, 0.2f), 0.0f);
+    Sphere sphere3(Vector3(0.0f, 1.5f, -7.0f), 0.5f, Color(0.2f, 0.2f, 0.8f), 0.8f);
 
 
     Scene scene;
@@ -59,7 +59,7 @@ int main() {
     Vector3 planeNormal(0.0f, 1.0f, 0.0f); // Normal pointing upwards
     float planeDistance = -20.0f; // Distance from the origin (adjust this value as needed)
     Color planeColor(0.5f, 0.5f, 0.5f); // Ground plane color
-    std::shared_ptr<Object> groundPlane = std::make_shared<Plane>(planeNormal, planeDistance, planeColor);
+    std::shared_ptr<Object> groundPlane = std::make_shared<Plane>(planeNormal, planeDistance, planeColor, 0.0f);
     scene.addObject(groundPlane);
 
     std::vector<std::vector<Color>> framebuffer(width, std::vector<Color>(height));
