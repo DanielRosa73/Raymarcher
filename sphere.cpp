@@ -1,8 +1,8 @@
 #include "sphere.h"
 
-Sphere::Sphere() : m_center(Vector3(0.0f, 0.0f, 0.0f)), m_radius(1.0f), m_color(Color(1.0f, 1.0f, 1.0f)), m_opacity(1.0f) {}
+Sphere::Sphere() : m_center(Vector3(0.0f, 0.0f, 0.0f)), m_radius(1.0f), m_color(Color(1.0f, 1.0f, 1.0f)) {}
 
-Sphere::Sphere(const Vector3& center, float radius, const Color& color, float opacity) : m_center(center), m_radius(radius), m_color(color), m_opacity(opacity) {}
+Sphere::Sphere(const Vector3& center, float radius, const Color& color) : m_center(center), m_radius(radius), m_color(color) {}
 
 bool Sphere::intersect(const Ray& ray, float& t, Vector3& normal, Color& color) const {
     Vector3 oc = ray.getOrigin() - m_center;

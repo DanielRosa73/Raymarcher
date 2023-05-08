@@ -79,7 +79,7 @@ Vector3 estimateNormal(const Vector3& point, const std::vector<std::shared_ptr<O
 
 Raymarcher::Raymarcher() {}
 
-//NO ANTIALIASING
+
 void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& framebuffer) {
     const Camera& camera = scene.getCamera();
     int width = framebuffer.size();
@@ -95,7 +95,7 @@ void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& fra
     }
 }
 
-//ANTIALIASING
+
 /*
 void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& framebuffer) {
     const Camera& camera = scene.getCamera();
@@ -118,45 +118,26 @@ void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& fra
 }
 */
 
-
-
 Color Raymarcher::trace(const Scene& scene, const Ray& ray) {
     Vector3 hit_point;
     std::shared_ptr<Object> hit_object;
-    Color accumulated_color(0.0f, 0.0f, 0.0f);
-    Color transparency(1.0f, 1.0f, 1.0f);
-    Ray current_ray = ray;
+    bool hit = raymarch(scene, ray, hit_point, hit_object);
 
-    if (raymarch(scene, current_ray, hit_point, hit_object)) {
+    if (hit && hit_object) {
         Vector3 normal = estimateNormal(hit_point, scene.getObjects());
         Color object_color;
-        float object_opacity;
-
         if (auto sphere = std::dynamic_pointer_cast<Sphere>(hit_object)) {
             object_color = sphere->getColor();
-            object_opacity = sphere->getOpacity();
         } else if (auto plane = std::dynamic_pointer_cast<Plane>(hit_object)) {
             object_color = plane->getColor();
-            object_opacity = plane->getOpacity();
         }
-
-        Color shaded_color = shade(scene, hit_point, normal, object_color, current_ray);
-        accumulated_color += transparency * shaded_color * (1.0f - object_opacity);
-        transparency *= Color(object_opacity, object_opacity, object_opacity);
-
-        // If the object is transparent, trace a ray through it and add the color behind it
-        if (object_opacity < 1.0f) {
-            Ray refracted_ray(hit_point + current_ray.getDirection() * EPSILON, current_ray.getDirection());
-            accumulated_color += transparency * trace(scene, refracted_ray);
-        }
-    } else {
-        accumulated_color += transparency * getBackgroundColor(current_ray);
+        return shade(scene, hit_point, normal, object_color, ray);
+    } 
+    else {
+        return getBackgroundColor(ray);
     }
-
-    return accumulated_color;
+    return getBackgroundColor(ray);
 }
-
-
 
 
 Color Raymarcher::shade(const Scene& scene, const Vector3& point, const Vector3& normal, const Color& object_color, const Ray& ray) {
@@ -191,14 +172,11 @@ Color Raymarcher::shade(const Scene& scene, const Vector3& point, const Vector3&
 
 
 
-
-
 Color Raymarcher::getBackgroundColor(const Ray& ray) const {
     Vector3 unitDirection = ray.getDirection().normalized();
     float t = 0.5f * (unitDirection.y + 1.0f);
     return Color::lerp(Color(1.0f, 1.0f, 1.0f), Color(0.5f, 0.7f, 1.0f), t);
 }
-
 
 
 bool Raymarcher::shadow(const Scene& scene, const Vector3& point, const Light& light) {
@@ -219,3 +197,12 @@ bool Raymarcher::shadow(const Scene& scene, const Vector3& point, const Light& l
 
     return false;
     }
+
+
+
+
+
+
+
+
+       
