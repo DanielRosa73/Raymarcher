@@ -46,7 +46,7 @@ int main() {
     int height = 600;
 
     Camera camera(Vector3(0.0f, 0.0f, 5.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
-    Light light(Vector3(5.0f, 5.0f, 5.0f), Color(1.0f, 1.0f, 1.0f));
+    Light light(Vector3(5.0f, 5.0f, 5.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
 
     Sphere sphere1(Vector3(-1.0f, 0.5f, -3.0f), 0.5f, Color(0.8f, 0.2f, 0.2f));
     Sphere sphere2(Vector3(1.0f, 1.5f, -4.0f), 0.5f, Color(0.2f, 0.2f, 0.7f));
@@ -61,15 +61,16 @@ int main() {
     scene.addObject(std::make_shared<Sphere>(sphere1));
     scene.addObject(std::make_shared<Sphere>(sphere2));
     scene.addObject(std::make_shared<Sphere>(sphere3));
-    scene.addObject(std::make_shared<Cone>(cone1));
+    //scene.addObject(std::make_shared<Cone>(cone1));
     //scene.addObject(std::make_shared<Cone>(cone2));
+    
     
     Vector3 cubeCenter(2, 1 , -3);
     Vector3 cubeDimensions(1, 1, 1);
     Color cubeColor(0.5, 0.2, 0.8);
     std::shared_ptr<Cube> cube = std::make_shared<Cube>(cubeCenter, cubeDimensions, cubeColor);
     scene.addObject(cube);
-
+    
 
      // Torus
     Vector3 torusCenter(3, -2.5, -10);
@@ -78,7 +79,7 @@ int main() {
     Color torusColor(0.8, 0, 0.2);
     std::shared_ptr<Torus> torus = std::make_shared<Torus>(torusCenter, majorRadius, minorRadius, torusColor);
     scene.addObject(torus);
-
+    
     
     Vector3 planeNormal(0.0f, 1.0f, 0.0f); // Normal pointing upwards
     float planeDistance = -20.0f; // Distance from the origin (adjust this value as needed)

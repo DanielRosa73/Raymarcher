@@ -8,11 +8,7 @@ class Light {
 public:
     Light();
     
-    //Light as a single point
-    Light(const Vector3& position, const Color& color);
-
-    //Light as a sphere, in order to have soft shadows
-    //Light(const Vector3& position, const Color& color, float radius);
+    Light(const Vector3& position, const Color& color, float radius);
 
     const Vector3& getPosition() const;
     const Color& getColor() const;

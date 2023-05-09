@@ -19,7 +19,7 @@ constexpr float EPSILON = 1e-6f;
 constexpr int SAMPLES_PER_PIXEL = 10;
 constexpr float AMBIENT_LIGHT_INTENSITY = 0.2f;
 constexpr int NUM_SHADOW_RAYS = 32;
-constexpr float SHADOW_THRESHOLD = 0.5f;
+constexpr float SHADOW_THRESHOLD = 0.1f;
 constexpr float SHADOW_BIAS = 1e-3f;
 
 float sphereSDF(const Vector3& point, const Sphere& sphere) {
@@ -144,6 +144,7 @@ Vector3 estimateNormal(const Vector3& point, const std::vector<std::shared_ptr<O
 Raymarcher::Raymarcher() {}
 
 
+/*
 void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& framebuffer) {
     const Camera& camera = scene.getCamera();
     int width = framebuffer.size();
@@ -158,9 +159,9 @@ void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& fra
         }
     }
 }
+*/
 
 
-/*
 void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& framebuffer) {
     const Camera& camera = scene.getCamera();
     int width = framebuffer.size();
@@ -180,7 +181,7 @@ void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& fra
         }
     }
 }
-*/
+
 
 Color Raymarcher::trace(const Scene& scene, const Ray& ray) {
     Vector3 hit_point;
@@ -212,25 +213,25 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray) {
 Color Raymarcher::shade(const Scene& scene, const Vector3& point, const Vector3& normal, const Color& object_color, const Ray& ray) {
     const auto& lights = scene.getLights();
     
-    //Uncomment for no ambient lightning
-    //Color result(0.0f, 0.0f, 0.0f);
-
-    //Comment for no ambient lighting
-    Color result = object_color * AMBIENT_LIGHT_INTENSITY;
+    Color result = object_color * AMBIENT_LIGHT_INTENSITY; // Ambient light
 
     for (const auto& light : lights) {
         Vector3 light_direction = (light->getPosition() - point).normalized();
         Vector3 view_direction = (ray.getDirection() * -1.0f).normalized();
         Vector3 half_vector = (light_direction + view_direction).normalized();
-        if (!shadow(scene, point, *light)) {
+
+        float shadow_ratio = shadow(scene, point, *light);  // Calculate shadow ratio
+
+        // Only calculate lighting if the point is not fully in shadow
+        if (shadow_ratio < 1.0f) {
             // Diffuse lighting
             float diffuse = std::max(normal.dot(light_direction), 0.0f);
-            Color diffuse_color = object_color * light->getColor() * diffuse;
+            Color diffuse_color = object_color * light->getColor() * diffuse * (1.0f - shadow_ratio);
 
             // Specular lighting
             float shininess = 32.0f;
             float specular = std::pow(std::max(normal.dot(half_vector), 0.0f), shininess);
-            Color specular_color = light->getColor() * specular;
+            Color specular_color = light->getColor() * specular * (1.0f - shadow_ratio);
 
             result = result + diffuse_color + specular_color;
         }
@@ -238,6 +239,7 @@ Color Raymarcher::shade(const Scene& scene, const Vector3& point, const Vector3&
 
     return result;
 }
+
 
 
 
@@ -268,29 +270,36 @@ bool Raymarcher::shadow(const Scene& scene, const Vector3& point, const Light& l
     }
 */
 
-bool Raymarcher::shadow(const Scene& scene, const Vector3& point, const Light& light) {
-    Vector3 light_direction = (light.getPosition() - point).normalized();
-    Vector3 startPoint = point + light_direction * SHADOW_BIAS;
-    float distanceToLight = (light.getPosition() - point).length();
-    float totalDistance = 0.0f;
+float Raymarcher::shadow(const Scene& scene, const Vector3& point, const Light& light) {
+    int shadowCount = 0;
 
-    for (int i = 0; i < MAX_MARCHING_STEPS; ++i) {
-        Vector3 currentPoint = startPoint + light_direction * totalDistance;
-        float distance = sceneSDF(currentPoint, scene.getObjects());
+    for (int i = 0; i < NUM_SHADOW_RAYS; ++i) {
+        Vector3 light_position = light.getRandomPoint();
+        Vector3 light_direction = (light_position - point).normalized();
+        Vector3 startPoint = point + light_direction * SHADOW_BIAS;
+        float distanceToLight = (light_position - point).length();
+        float totalDistance = 0.0f;
 
-        if (distance < MIN_HIT_DISTANCE) {
-            return true;
-        }
+        for (int j = 0; j < MAX_MARCHING_STEPS; ++j) {
+            Vector3 currentPoint = startPoint + light_direction * totalDistance;
+            float distance = sceneSDF(currentPoint, scene.getObjects());
 
-        totalDistance += distance;
+            if (distance < MIN_HIT_DISTANCE) {
+                shadowCount += 1;
+                break;
+            }
 
-        if (totalDistance >= distanceToLight) {
-            break;
+            totalDistance += distance;
+
+            if (totalDistance >= distanceToLight) {
+                break;
+            }
         }
     }
 
-    return false;
+    return (float)shadowCount / NUM_SHADOW_RAYS;
 }
+
 
 
 
