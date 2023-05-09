@@ -45,12 +45,16 @@ int main() {
     int width = 800;
     int height = 600;
 
-    Camera camera(Vector3(0.0f, 0.0f, 5.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
-    Light light(Vector3(5.0f, 5.0f, 5.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
+    Camera camera(Vector3(0.0f, 0.0f, 7.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
+    Light light(Vector3(0.0f, 4.0f, -2.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
 
-    Sphere sphere1(Vector3(-1.0f, 0.5f, -3.0f), 0.5f, Color(0.8f, 0.2f, 0.2f));
-    Sphere sphere2(Vector3(1.0f, 1.5f, -4.0f), 0.5f, Color(0.2f, 0.2f, 0.7f));
-    Sphere sphere3(Vector3(2.0f, -0.5f, 2.0f), 0.5f, Color(0.2f, 0.8f, 0.3f));
+    Material mat1(1, 600);
+    Material mat2(1, 10);
+    Material mat3(1, 120);
+    Material mat(1, 32);
+    Sphere sphere1(Vector3(-1.0f, 0.5f, -3.0f), 0.5f, Color(0.8f, 0.2f, 0.2f), mat1);
+    Sphere sphere2(Vector3(1.0f, 1.5f, -4.0f), 0.5f, Color(0.2f, 0.2f, 0.7f), mat2);
+    Sphere sphere3(Vector3(2.0f, -0.5f, 2.0f), 0.5f, Color(0.2f, 0.8f, 0.3f), mat3);
     
     //Cone cone1(Vector3(-2.0f, 0.0f, -2.0f), 1.0f, 1.0f, Color(0.2f, 0.8f, 0.2f));
     //Cone cone2(Vector3(2.0f, 0.0f, -2.0f), 1.5f, 0.5f, Color(0.8f, 0.2f, 0.2f));
@@ -65,11 +69,26 @@ int main() {
     //scene.addObject(std::make_shared<Cone>(cone2));
     
     
-    Vector3 cubeCenter(2, 1 , -3);
-    Vector3 cubeDimensions(1, 1, 1);
-    Color cubeColor(0.5, 0.2, 0.8);
-    std::shared_ptr<Cube> cube = std::make_shared<Cube>(cubeCenter, cubeDimensions, cubeColor);
-    scene.addObject(cube);
+    Vector3 cubeCenterL(-5, 1 , -3);
+    Vector3 cubeCenterR(5, 1 , -3);
+    Vector3 cubeCenterBack(0, 1 , -5);
+    Vector3 cubeCenterBot(0, -2 , 0);
+    Vector3 cubeCenterTop(0, 5 , 0);
+    Vector3 cubeDimensions(1, 10, 10);
+    Vector3 cubeDimensions2(10, 10, 1);
+    Vector3 cubeDimensions3(10, 1, 10);
+    Color cubeColor1(0.5, 1, 0.8);
+    Color cubeColor2(1, 0.5, 0.8);
+    std::shared_ptr<Cube> cubeL = std::make_shared<Cube>(cubeCenterL, cubeDimensions, cubeColor1, mat);
+    std::shared_ptr<Cube> cubeR = std::make_shared<Cube>(cubeCenterR, cubeDimensions, cubeColor1, mat);
+    std::shared_ptr<Cube> cubeBack = std::make_shared<Cube>(cubeCenterBack, cubeDimensions2, cubeColor2, mat);
+    std::shared_ptr<Cube> cubeBot = std::make_shared<Cube>(cubeCenterBot, cubeDimensions3, cubeColor2, mat);
+    std::shared_ptr<Cube> cubeTop = std::make_shared<Cube>(cubeCenterTop, cubeDimensions3, cubeColor2, mat);
+    scene.addObject(cubeL);
+    scene.addObject(cubeR);
+    scene.addObject(cubeBack);
+    scene.addObject(cubeBot);
+    scene.addObject(cubeTop);
     
 
      // Torus
@@ -77,7 +96,7 @@ int main() {
     float majorRadius = 1.2f;
     float minorRadius = 0.5f;
     Color torusColor(0.8, 0, 0.2);
-    std::shared_ptr<Torus> torus = std::make_shared<Torus>(torusCenter, majorRadius, minorRadius, torusColor);
+    std::shared_ptr<Torus> torus = std::make_shared<Torus>(torusCenter, majorRadius, minorRadius, torusColor, mat);
     scene.addObject(torus);
     
     
@@ -85,7 +104,7 @@ int main() {
     float planeDistance = -20.0f; // Distance from the origin (adjust this value as needed)
     Color planeColor(0.5f, 0.5f, 0.5f); // Ground plane color
     std::shared_ptr<Object> groundPlane = std::make_shared<Plane>(planeNormal, planeDistance, planeColor);
-    scene.addObject(groundPlane);
+    // scene.addObject(groundPlane);
 
     std::vector<std::vector<Color>> framebuffer(width, std::vector<Color>(height));
     Raymarcher raymarcher;

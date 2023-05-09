@@ -1,10 +1,10 @@
 #include "sphere.h"
 
-Sphere::Sphere() : m_center(Vector3(0.0f, 0.0f, 0.0f)), m_radius(1.0f), m_color(Color(1.0f, 1.0f, 1.0f)) {}
+Sphere::Sphere() : m_center(Vector3(0.0f, 0.0f, 0.0f)), m_radius(1.0f), m_color(Color(1.0f, 1.0f, 1.0f)), m_material(Material(0.5f, 0.5f)) {}
 
-Sphere::Sphere(const Vector3& center, float radius, const Color& color) : m_center(center), m_radius(radius), m_color(color) {}
+Sphere::Sphere(const Vector3& center, float radius, const Color& color, const Material& mat) : m_center(center), m_radius(radius), m_color(color), m_material(mat) {}
 
-bool Sphere::intersect(const Ray& ray, float& t, Vector3& normal, Color& color) const {
+bool Sphere::intersect(const Ray& ray, float& t, Vector3& normal, Color& color, Material& mat) const {
     Vector3 oc = ray.getOrigin() - m_center;
     float a = ray.getDirection().dot(ray.getDirection());
     float b = 2.0f * oc.dot(ray.getDirection());

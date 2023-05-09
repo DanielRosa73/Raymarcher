@@ -18,7 +18,7 @@ constexpr float MAX_DISTANCE = 1e14f;
 constexpr float EPSILON = 1e-6f;
 constexpr int SAMPLES_PER_PIXEL = 10;
 constexpr float AMBIENT_LIGHT_INTENSITY = 0.2f;
-constexpr int NUM_SHADOW_RAYS = 32;
+constexpr int NUM_SHADOW_RAYS = 1;
 constexpr float SHADOW_THRESHOLD = 0.1f;
 constexpr float SHADOW_BIAS = 1e-3f;
 
@@ -51,6 +51,10 @@ float coneSDF(const Vector3& point, const Cone& cone) {
 }
 
 
+float smoothmin(float a, float b, float k) {
+    float h = std::max(k - std::abs(a - b), 0.0f) / k;
+    return std::min(a, b) - h * h * h * k * 1/6.0f;
+}
 
 
 float sceneSDF(const Vector3& point, const std::vector<std::shared_ptr<Object>>& objects) {
@@ -144,7 +148,7 @@ Vector3 estimateNormal(const Vector3& point, const std::vector<std::shared_ptr<O
 Raymarcher::Raymarcher() {}
 
 
-/*
+
 void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& framebuffer) {
     const Camera& camera = scene.getCamera();
     int width = framebuffer.size();
@@ -159,9 +163,9 @@ void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& fra
         }
     }
 }
-*/
 
 
+/*
 void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& framebuffer) {
     const Camera& camera = scene.getCamera();
     int width = framebuffer.size();
@@ -180,7 +184,7 @@ void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& fra
             framebuffer[i][j] = pixel_color / float(SAMPLES_PER_PIXEL);
         }
     }
-}
+ }*/
 
 
 Color Raymarcher::trace(const Scene& scene, const Ray& ray) {
@@ -191,16 +195,20 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray) {
     if (hit && hit_object) {
         Vector3 normal = estimateNormal(hit_point, scene.getObjects());
         Color object_color;
+        Material object_material;
         if (auto sphere = std::dynamic_pointer_cast<Sphere>(hit_object)) {
             object_color = sphere->getColor();
+            object_material = sphere->getMaterial();
         } else if (auto plane = std::dynamic_pointer_cast<Plane>(hit_object)) {
             object_color = plane->getColor();
         } else if (auto cube = std::dynamic_pointer_cast<Cube>(hit_object)) {
             object_color = cube->getColor();
+            object_material = cube->getMaterial();
         } else if (auto torus = std::dynamic_pointer_cast<Torus>(hit_object)) {
             object_color = torus->getColor();
+            object_material = torus->getMaterial();
         }
-        return shade(scene, hit_point, normal, object_color, ray);
+        return shade(scene, hit_point, normal, object_material, object_color, ray);
     } 
     else {
         return getBackgroundColor(ray);
@@ -210,7 +218,7 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray) {
 
 
 
-Color Raymarcher::shade(const Scene& scene, const Vector3& point, const Vector3& normal, const Color& object_color, const Ray& ray) {
+Color Raymarcher::shade(const Scene& scene, const Vector3& point, const Vector3& normal, const Material& object_material, const Color& object_color, const Ray& ray) {
     const auto& lights = scene.getLights();
     
     Color result = object_color * AMBIENT_LIGHT_INTENSITY; // Ambient light
@@ -226,11 +234,11 @@ Color Raymarcher::shade(const Scene& scene, const Vector3& point, const Vector3&
         if (shadow_ratio < 1.0f) {
             // Diffuse lighting
             float diffuse = std::max(normal.dot(light_direction), 0.0f);
-            Color diffuse_color = object_color * light->getColor() * diffuse * (1.0f - shadow_ratio);
+            Color diffuse_color = object_color * diffuse * object_material.diffuse;
 
             // Specular lighting
-            float shininess = 32.0f;
-            float specular = std::pow(std::max(normal.dot(half_vector), 0.0f), shininess);
+            float shininess = object_material.specular;
+            float specular = std::pow(std::max(normal.dot(half_vector), 0.8f), shininess);
             Color specular_color = light->getColor() * specular * (1.0f - shadow_ratio);
 
             result = result + diffuse_color + specular_color;

@@ -4,7 +4,7 @@ Plane::Plane() : m_normal(Vector3(0.0f, 1.0f, 0.0f)), m_distance(0.0f), m_color(
 
 Plane::Plane(const Vector3& normal, float distance, const Color& color) : m_normal(normal.normalized()), m_distance(distance), m_color(color) {}
 
-bool Plane::intersect(const Ray& ray, float& t, Vector3& normal, Color& color) const {
+bool Plane::intersect(const Ray& ray, float& t, Vector3& normal, Color& color, Material& mat) const {
     float denom = m_normal.dot(ray.getDirection());
     if (std::abs(denom) > 1e-6) {
         float tCandidate = (m_distance - m_normal.dot(ray.getOrigin())) / denom;
