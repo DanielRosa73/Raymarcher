@@ -2,10 +2,14 @@
 #include "camera.h"
 #include "light.h"
 #include "sphere.h"
+#include "cube.h"
 #include "scene.h"
 #include "color.h"
 #include "vector3.h"
 #include "plane.h"
+#include "cube.h"
+#include "torus.h"
+
 
 constexpr int MAX_MARCHING_STEPS = 400;
 constexpr float MIN_HIT_DISTANCE = 1e-4f;
@@ -15,6 +19,7 @@ constexpr int SAMPLES_PER_PIXEL = 10;
 constexpr float AMBIENT_LIGHT_INTENSITY = 0.2f;
 constexpr int NUM_SHADOW_RAYS = 32;
 constexpr float SHADOW_THRESHOLD = 0.5f;
+constexpr float SHADOW_BIAS = 1e-3f;
 
 float sphereSDF(const Vector3& point, const Sphere& sphere) {
     return (point - sphere.getCenter()).length() - sphere.getRadius();
@@ -24,24 +29,64 @@ float planeSDF(const Vector3& point, const Plane& plane) {
     return point.dot(plane.getNormal()) - plane.getDistance();
 }
 
+
+float cubeSDF(const Vector3& point, const Cube& cube) {
+    Vector3 p = point - cube.getCenter();
+    Vector3 d = p.abs() - cube.getDimensions() * 0.5f;
+    return d.max(0.0f).length() + std::min(std::max(d.x, std::max(d.y, d.z)), 0.0f);
+}
+
+float torusSDF(const Vector3& point, const Torus& torus) {
+    Vector3 p = point - torus.getCenter();
+    Vector3 q = Vector3((Vector3(p.x, 0.0f, p.z).length() - torus.getMajorRadius()), p.y, 0.0f);
+    return q.length() - torus.getMinorRadius();
+}
+
+float coneSDF(const Vector3& point, const Cone& cone) {
+    Vector3 p = point - cone.getCenter();
+    float height = cone.getHeight();
+    float radius = cone.getRadius();
+    Vector2 q = Vector2(p.z, p.y);
+    float k1 = height / radius;
+    float k2 = height * sqrt(2) / radius;
+    Vector2 w = Vector2(k1 * q.x - std::min(k1 * q.y, 0.0f), k2 * q.y);
+    return Vector2(w.x, abs(w.y) - height).max(0.0f).length();
+}
+
+
 float sceneSDF(const Vector3& point, const std::vector<std::shared_ptr<Object>>& objects) {
     float min_distance = MAX_DISTANCE;
     for (const auto& object : objects) {
+        float distance;
         if (auto sphere = std::dynamic_pointer_cast<Sphere>(object)) {
-            min_distance = std::min(min_distance, sphereSDF(point, *sphere));
+            distance = sphereSDF(point, *sphere);
         } else if (auto plane = std::dynamic_pointer_cast<Plane>(object)) {
-            min_distance = std::min(min_distance, planeSDF(point, *plane));
+            distance = planeSDF(point, *plane);
+        } else if (auto cube = std::dynamic_pointer_cast<Cube>(object)) {
+            distance = cubeSDF(point, *cube);
+        } else if (auto torus = std::dynamic_pointer_cast<Torus>(object)) {
+            distance = torusSDF(point, *torus);
+        } else if (auto cone = std::dynamic_pointer_cast<Cone>(object)) {
+            distance = coneSDF(point, *cone);
         }
+        min_distance = std::min(min_distance, distance);
     }
     return min_distance;
 }
 
 
+
+
+
+
+
 bool raymarch(const Scene& scene, const Ray& ray, Vector3& hit_point, std::shared_ptr<Object>& hit_object) {
     float total_distance = 0.0f;
+
     for (int i = 0; i < MAX_MARCHING_STEPS; ++i) {
         hit_point = ray.pointAtParameter(total_distance);
         float distance = sceneSDF(hit_point, scene.getObjects());
+
         if (distance < MIN_HIT_DISTANCE) {
             hit_object = nullptr;
             for (const auto& object : scene.getObjects()) {
@@ -55,17 +100,32 @@ bool raymarch(const Scene& scene, const Ray& ray, Vector3& hit_point, std::share
                         hit_object = plane;
                         break;
                     }
+                } else if (auto cube = std::dynamic_pointer_cast<Cube>(object)) {
+                    if (std::abs(cubeSDF(hit_point, *cube)) < MIN_HIT_DISTANCE) {
+                        hit_object = cube;
+                        break;
+                    }
+                } else if (auto torus = std::dynamic_pointer_cast<Torus>(object)) {
+                    if (std::abs(torusSDF(hit_point, *torus)) < MIN_HIT_DISTANCE) {
+                        hit_object = torus;
+                        break;
+                    }
                 }
             }
+
             return true;
         }
+
         total_distance += distance;
+
         if (total_distance >= MAX_DISTANCE) {
             break;
         }
     }
+
     return false;
 }
+
 
 Vector3 estimateNormal(const Vector3& point, const std::vector<std::shared_ptr<Object>>& objects) {
     Vector3 normal(
@@ -79,7 +139,7 @@ Vector3 estimateNormal(const Vector3& point, const std::vector<std::shared_ptr<O
 
 Raymarcher::Raymarcher() {}
 
-
+/*
 void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& framebuffer) {
     const Camera& camera = scene.getCamera();
     int width = framebuffer.size();
@@ -94,9 +154,9 @@ void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& fra
         }
     }
 }
+*/
 
 
-/*
 void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& framebuffer) {
     const Camera& camera = scene.getCamera();
     int width = framebuffer.size();
@@ -116,7 +176,7 @@ void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& fra
         }
     }
 }
-*/
+
 
 Color Raymarcher::trace(const Scene& scene, const Ray& ray) {
     Vector3 hit_point;
@@ -130,6 +190,10 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray) {
             object_color = sphere->getColor();
         } else if (auto plane = std::dynamic_pointer_cast<Plane>(hit_object)) {
             object_color = plane->getColor();
+        } else if (auto cube = std::dynamic_pointer_cast<Cube>(hit_object)) {
+            object_color = cube->getColor();
+        } else if (auto torus = std::dynamic_pointer_cast<Torus>(hit_object)) {
+            object_color = torus->getColor();
         }
         return shade(scene, hit_point, normal, object_color, ray);
     } 
@@ -138,6 +202,7 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray) {
     }
     return getBackgroundColor(ray);
 }
+
 
 
 Color Raymarcher::shade(const Scene& scene, const Vector3& point, const Vector3& normal, const Color& object_color, const Ray& ray) {
@@ -178,7 +243,7 @@ Color Raymarcher::getBackgroundColor(const Ray& ray) const {
     return Color::lerp(Color(1.0f, 1.0f, 1.0f), Color(0.5f, 0.7f, 1.0f), t);
 }
 
-
+/* This is raytracing
 bool Raymarcher::shadow(const Scene& scene, const Vector3& point, const Light& light) {
     Vector3 light_direction = (light.getPosition() - point).normalized();
     Ray shadow_ray(point + light_direction * EPSILON, light_direction);
@@ -197,8 +262,31 @@ bool Raymarcher::shadow(const Scene& scene, const Vector3& point, const Light& l
 
     return false;
     }
+*/
 
+bool Raymarcher::shadow(const Scene& scene, const Vector3& point, const Light& light) {
+    Vector3 light_direction = (light.getPosition() - point).normalized();
+    Vector3 startPoint = point + light_direction * SHADOW_BIAS;
+    float distanceToLight = (light.getPosition() - point).length();
+    float totalDistance = 0.0f;
 
+    for (int i = 0; i < MAX_MARCHING_STEPS; ++i) {
+        Vector3 currentPoint = startPoint + light_direction * totalDistance;
+        float distance = sceneSDF(currentPoint, scene.getObjects());
+
+        if (distance < MIN_HIT_DISTANCE) {
+            return true;
+        }
+
+        totalDistance += distance;
+
+        if (totalDistance >= distanceToLight) {
+            break;
+        }
+    }
+
+    return false;
+}
 
 
 

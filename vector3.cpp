@@ -91,3 +91,11 @@ std::ostream& operator<<(std::ostream& os, const Vector3& v) {
     os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
     return os;
 }
+
+Vector3 Vector3::abs() const {
+    return Vector3(std::abs(x), std::abs(y), std::abs(z));
+}
+
+Vector3 Vector3::max(float value) const {
+    return Vector3(std::max(x, value), std::max(y, value), std::max(z, value));
+}

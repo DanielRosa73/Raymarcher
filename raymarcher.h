@@ -3,6 +3,7 @@
 
 #include "scene.h"
 #include "color.h"
+#include "torus.h"
 #include <vector>
 
 class Raymarcher {

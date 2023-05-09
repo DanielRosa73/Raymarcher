@@ -30,6 +30,8 @@ public:
     Vector3 normalized() const;
     float dot(const Vector3& other) const;
     Vector3 cross(const Vector3& other) const;
+    Vector3 abs() const;
+    Vector3 max(float value) const;
 
     friend std::ostream& operator<<(std::ostream& os, const Vector3& v);
 };
