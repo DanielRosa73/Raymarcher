@@ -8,6 +8,7 @@
 #include "plane.h"
 #include "cube.h"
 #include "torus.h"
+#include "cone.h"
 
 #include <vector>
 #include <iostream>
@@ -51,6 +52,8 @@ int main() {
     Sphere sphere2(Vector3(1.0f, 1.5f, -4.0f), 0.5f, Color(0.2f, 0.2f, 0.7f));
     Sphere sphere3(Vector3(2.0f, -0.5f, 2.0f), 0.5f, Color(0.2f, 0.8f, 0.3f));
     
+    //Cone cone1(Vector3(-2.0f, 0.0f, -2.0f), 1.0f, 1.0f, Color(0.2f, 0.8f, 0.2f));
+    //Cone cone2(Vector3(2.0f, 0.0f, -2.0f), 1.5f, 0.5f, Color(0.8f, 0.2f, 0.2f));
 
     Scene scene;
     scene.setCamera(camera);
@@ -58,6 +61,8 @@ int main() {
     scene.addObject(std::make_shared<Sphere>(sphere1));
     scene.addObject(std::make_shared<Sphere>(sphere2));
     scene.addObject(std::make_shared<Sphere>(sphere3));
+    scene.addObject(std::make_shared<Cone>(cone1));
+    //scene.addObject(std::make_shared<Cone>(cone2));
     
     Vector3 cubeCenter(2, 1 , -3);
     Vector3 cubeDimensions(1, 1, 1);

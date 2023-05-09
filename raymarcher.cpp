@@ -9,6 +9,7 @@
 #include "plane.h"
 #include "cube.h"
 #include "torus.h"
+#include "cone.h"
 
 
 constexpr int MAX_MARCHING_STEPS = 400;
@@ -44,14 +45,12 @@ float torusSDF(const Vector3& point, const Torus& torus) {
 
 float coneSDF(const Vector3& point, const Cone& cone) {
     Vector3 p = point - cone.getCenter();
-    float height = cone.getHeight();
-    float radius = cone.getRadius();
-    Vector2 q = Vector2(p.z, p.y);
-    float k1 = height / radius;
-    float k2 = height * sqrt(2) / radius;
-    Vector2 w = Vector2(k1 * q.x - std::min(k1 * q.y, 0.0f), k2 * q.y);
-    return Vector2(w.x, abs(w.y) - height).max(0.0f).length();
+    Vector3 c = Vector3(0, cone.getHeight(), 0);  // cone tip at origin and in positive y direction
+    float q = (p - c * std::max(0.0f, p.dot(c) / c.dot(c))).length(); // distance from p to line (c, c + cone direction)
+    return std::max(-q, p.y); // q for region outside of cone, p.y for region inside cone
 }
+
+
 
 
 float sceneSDF(const Vector3& point, const std::vector<std::shared_ptr<Object>>& objects) {
@@ -110,6 +109,11 @@ bool raymarch(const Scene& scene, const Ray& ray, Vector3& hit_point, std::share
                         hit_object = torus;
                         break;
                     }
+                } else if (auto cone = std::dynamic_pointer_cast<Cone>(object)) {
+                    if (std::abs(coneSDF(hit_point, *cone)) < MIN_HIT_DISTANCE) {
+                        hit_object = cone;
+                        break;
+                    }
                 }
             }
 
@@ -139,7 +143,7 @@ Vector3 estimateNormal(const Vector3& point, const std::vector<std::shared_ptr<O
 
 Raymarcher::Raymarcher() {}
 
-/*
+
 void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& framebuffer) {
     const Camera& camera = scene.getCamera();
     int width = framebuffer.size();
@@ -154,9 +158,9 @@ void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& fra
         }
     }
 }
-*/
 
 
+/*
 void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& framebuffer) {
     const Camera& camera = scene.getCamera();
     int width = framebuffer.size();
@@ -176,7 +180,7 @@ void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& fra
         }
     }
 }
-
+*/
 
 Color Raymarcher::trace(const Scene& scene, const Ray& ray) {
     Vector3 hit_point;
