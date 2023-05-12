@@ -5,13 +5,10 @@
 
 class Torus : public Object {
 public:
-    Torus(const Vector3& position, float major_radius, float minor_radius, const Color& color);
-
+    Torus(const Vector3& position, float major_radius, float minor_radius, const Color& color, const Material& mat);
     
     Color getColor() const;
-    bool intersect(const Ray& ray, float& t, Vector3& normal, Color& color) const override {
-        return false;
-    }
+    Material getMaterial() const;
     Vector3 getCenter() const {return position; }
     float getMajorRadius() const {return major_radius; }
     float getMinorRadius() const {return minor_radius;}
@@ -21,6 +18,7 @@ private:
     float major_radius;
     float minor_radius;
     Color color;
+    Material material;
 };
 
 #endif // TORUS_H
