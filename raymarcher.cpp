@@ -18,10 +18,10 @@ constexpr float MAX_DISTANCE = 1e14f;
 constexpr float EPSILON = 1e-6f;
 constexpr int SAMPLES_PER_PIXEL = 10;
 constexpr float AMBIENT_LIGHT_INTENSITY = 0.2f;
-constexpr int NUM_SHADOW_RAYS = 1;
+constexpr int NUM_SHADOW_RAYS = 32;
 constexpr float SHADOW_THRESHOLD = 0.1f;
 constexpr float SHADOW_BIAS = 1e-3f;
-constexpr int MAX_REFLECTION_BOUNCES = 5;
+constexpr int MAX_REFLECTION_BOUNCES = 8;
 
 float sphereSDF(const Vector3& point, const Sphere& sphere) {
     return (point - sphere.getCenter()).length() - sphere.getRadius();
@@ -141,6 +141,11 @@ Vector3 estimateNormal(const Vector3& point, const std::vector<std::shared_ptr<O
     return normal.normalized();
 }
 
+Ray calculateReflectionRay(const Ray& ray, const Vector3& hit_point, const Vector3& normal) {
+    Vector3 reflect_dir = ray.getDirection() - 2.0f * ray.getDirection().dot(normal) * normal;
+    return Ray(hit_point + reflect_dir * EPSILON, reflect_dir);
+}
+
 
 Raymarcher::Raymarcher() {}
 
@@ -156,7 +161,7 @@ void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& fra
             float u = float(i) / float(width);
             float v = float(j) / float(height);
             Ray ray = camera.getRay(u, v);
-            framebuffer[i][j] = trace(scene, ray);
+            framebuffer[i][j] = trace(scene, ray,0);
         }
     }
 }
@@ -176,7 +181,7 @@ void Raymarcher::render_antialiasing(const Scene& scene, std::vector<std::vector
                 float u = float(i + (rand() / (RAND_MAX + 1.0))) / float(width);
                 float v = float(j + (rand() / (RAND_MAX + 1.0))) / float(height);
                 Ray ray = camera.getRay(u, v);
-                pixel_color += trace(scene, ray);
+                pixel_color += trace(scene, ray,0);
             }
             framebuffer[i][j] = pixel_color / float(SAMPLES_PER_PIXEL);
         }
@@ -185,7 +190,7 @@ void Raymarcher::render_antialiasing(const Scene& scene, std::vector<std::vector
 
 
 
-Color Raymarcher::trace(const Scene& scene, const Ray& ray) {
+Color Raymarcher::trace(const Scene& scene, const Ray& ray, int depth) {
     Vector3 hit_point;
     std::shared_ptr<Object> hit_object;
     bool hit = raymarch(scene, ray, hit_point, hit_object);
@@ -205,14 +210,32 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray) {
         } else if (auto torus = std::dynamic_pointer_cast<Torus>(hit_object)) {
             object_color = torus->getColor();
             object_material = torus->getMaterial();
+        } 
+
+        // Phong shading for the local color.
+        Color local_color = shade(scene, hit_point, normal, object_material, object_color, ray);
+
+        // If the object is not reflective or we've hit the recursive limit, we're done.
+        if (object_material.reflectivity <= 0 || depth >= MAX_REFLECTION_BOUNCES) {
+            return local_color;
         }
-        return shade(scene, hit_point, normal, object_material, object_color, ray);
+
+        // Calculate reflection direction and new ray.
+        Vector3 reflection_direction = ray.getDirection().reflect(normal).normalized();
+        Ray reflection_ray(hit_point + EPSILON * reflection_direction, reflection_direction);
+
+        // Recursive call for the reflected color.
+        Color reflected_color = trace(scene, reflection_ray, depth + 1);
+
+        // Combine local and reflected color based on material reflectivity.
+        return local_color * (1.0f - object_material.reflectivity) + reflected_color * object_material.reflectivity;
     } 
     else {
+        // Background color if no hit.
         return getBackgroundColor(ray);
     }
-    return getBackgroundColor(ray);
 }
+
 
 
 

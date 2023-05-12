@@ -46,15 +46,15 @@ int main() {
     int height = 600;
 
     Camera camera(Vector3(0.0f, 0.0f, 7.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
-    Light light(Vector3(0.0f, 4.0f, -2.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
+    Light light(Vector3(0.0f, 4.0f, 1.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
 
-    Material mat1(1, 600);
-    Material mat2(3, 1500);
-    Material mat3(5, 120);
-    Material mat(1, 5000);
-    Sphere sphere1(Vector3(-1.0f, 0.5f, -3.0f), 0.5f, Color(0.8f, 0.2f, 0.2f), mat1);
-    Sphere sphere2(Vector3(1.0f, 1.5f, -4.0f), 0.5f, Color(0.2f, 0.2f, 0.7f), mat2);
-    Sphere sphere3(Vector3(2.0f, -0.5f, 2.0f), 0.5f, Color(0.2f, 0.8f, 0.3f), mat3);
+    Material mat1(1, 1000,0.12f);
+    Material mat2(1, 1500,0.0f);
+    Material mat3(5, 120,0.0f);
+    Material mat(1, 5000,0.0f);
+    Sphere sphere1(Vector3(-1.0f, -0.28f, -2.0f), 1.2f, Color(0.8f, 0.2f, 0.2f), mat1);
+    Sphere sphere2(Vector3(0.5f, -1.0f, 0.0f), 0.5f, Color(0.2f, 0.2f, 0.7f), mat2);
+    //Sphere sphere3(Vector3(2.0f, -0.5f, 2.0f), 0.5f, Color(0.2f, 0.8f, 0.3f), mat3);
     
     //Cone cone1(Vector3(-2.0f, 0.0f, -2.0f), 1.0f, 1.0f, Color(0.2f, 0.8f, 0.2f));
     //Cone cone2(Vector3(2.0f, 0.0f, -2.0f), 1.5f, 0.5f, Color(0.8f, 0.2f, 0.2f));
@@ -64,7 +64,7 @@ int main() {
     scene.addLight(std::make_shared<Light>(light));
     scene.addObject(std::make_shared<Sphere>(sphere1));
     scene.addObject(std::make_shared<Sphere>(sphere2));
-    scene.addObject(std::make_shared<Sphere>(sphere3));
+    //scene.addObject(std::make_shared<Sphere>(sphere3));
     //scene.addObject(std::make_shared<Cone>(cone1));
     //scene.addObject(std::make_shared<Cone>(cone2));
     
@@ -109,7 +109,7 @@ int main() {
 
     std::vector<std::vector<Color>> framebuffer(width, std::vector<Color>(height));
     Raymarcher raymarcher;
-    raymarcher.render(scene, framebuffer);
+    raymarcher.render_antialiasing(scene, framebuffer);
 
     write_ppm("output.ppm", framebuffer);
 

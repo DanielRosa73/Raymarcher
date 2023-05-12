@@ -11,9 +11,10 @@
 struct Material {
     float diffuse;
     float specular;
+    float reflectivity;
 
-    Material() {diffuse = 1; specular = 1;}
-    Material(float diffuse, float specular) : diffuse(diffuse), specular(specular) {} 
+    Material() {diffuse = 1; specular = 1;reflectivity = 0;}
+    Material(float diffuse, float specular, float reflectivity) : diffuse(diffuse), specular(specular), reflectivity(reflectivity) {} 
 };
 
 class Object {

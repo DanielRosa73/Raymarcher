@@ -15,8 +15,10 @@ public:
     Vector3 operator*(const Vector3& other) const;
     Vector3 operator/(const Vector3& other) const;
 
-    Vector3 operator*(float scalar) const; // Added this line
+    Vector3 operator*(float scalar) const;
     Vector3 operator/(float scalar) const;
+    Vector3 operator+(float scalar) const; // Added this line
+    Vector3 operator-(float scalar) const; // Added this line
 
     Vector3& operator+=(const Vector3& other);
     Vector3& operator-=(const Vector3& other);
@@ -25,6 +27,8 @@ public:
 
     Vector3& operator*=(float scalar);
     Vector3& operator/=(float scalar);
+    Vector3& operator+=(float scalar); // Added this line
+    Vector3& operator-=(float scalar); // Added this line
 
     float length() const;
     Vector3 normalized() const;
@@ -32,7 +36,10 @@ public:
     Vector3 cross(const Vector3& other) const;
     Vector3 abs() const;
     Vector3 max(float value) const;
-
+    
+    Vector3 reflect(const Vector3& normal) const; // Added this line
+    
+    friend Vector3 operator*(float scalar, const Vector3& v); // Added this line
     friend std::ostream& operator<<(std::ostream& os, const Vector3& v);
 };
 

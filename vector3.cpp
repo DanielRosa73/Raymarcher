@@ -99,3 +99,34 @@ Vector3 Vector3::abs() const {
 Vector3 Vector3::max(float value) const {
     return Vector3(std::max(x, value), std::max(y, value), std::max(z, value));
 }
+
+Vector3 Vector3::operator+(float scalar) const {
+    return Vector3(x + scalar, y + scalar, z + scalar);
+}
+
+Vector3 Vector3::operator-(float scalar) const {
+    return Vector3(x - scalar, y - scalar, z - scalar);
+}
+
+Vector3& Vector3::operator+=(float scalar) {
+    x += scalar;
+    y += scalar;
+    z += scalar;
+    return *this;
+}
+
+Vector3& Vector3::operator-=(float scalar) {
+    x -= scalar;
+    y -= scalar;
+    z -= scalar;
+    return *this;
+}
+
+Vector3 Vector3::reflect(const Vector3& normal) const {
+    // v - 2 * dot(v, n) * n
+    return *this - 2.0f * this->dot(normal) * normal;
+}
+
+Vector3 operator*(float scalar, const Vector3& v) {
+    return v * scalar;
+}
