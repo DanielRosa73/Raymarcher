@@ -46,14 +46,29 @@ int main() {
     int height = 600;
 
     Camera camera(Vector3(0.0f, 0.0f, 7.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
-    Light light(Vector3(0.0f, 4.0f, 1.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
+    Light light(Vector3(0.0f, 3.5f, 0.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
 
-    Material mat1(1, 1000,0.12f);
-    Material mat2(1, 1500,0.0f);
-    Material mat3(5, 120,0.0f);
-    Material mat(1, 5000,0.0f);
-    Sphere sphere1(Vector3(-1.0f, -0.28f, -2.0f), 1.2f, Color(0.8f, 0.2f, 0.2f), mat1);
-    Sphere sphere2(Vector3(0.5f, -1.0f, 0.0f), 0.5f, Color(0.2f, 0.2f, 0.7f), mat2);
+    Material mat1(1, 1000,0.2f);
+    Material mat11(1, 1000,0.2f);
+    Material mat2(1, 10000,0.0f);
+    Material mat3(1, 10000,0.0f);
+    Material mat4(1, 10000,0.0f);
+    Material mat5(1, 10000,0.0f);
+    Material mat6(1, 10000,0.0f);
+    Material mat7(1, 10000,0.0f);
+    Material mat8(1, 10000,0.0f);
+    Material mat(1, 10000,0.0f);
+
+    Sphere sphere1(Vector3(-1.75f, 0.25f, -1.6f), 1.6f, Color(0.48f, 0.61f, 0.61f), mat1);
+    Sphere sphere11(Vector3(1.75f, 0.25f, -1.9f), 1.6f, Color(0.12f, 0.28f, 0.59f), mat1);
+    Sphere sphere2(Vector3(-1.5f, -1.0f, 1.2f), 0.5f, Color(0.0f, 1.0f, 1.0f), mat2);
+    Sphere sphere3(Vector3(-2.3f, -1.0f, 1.9f), 0.5f, Color(1.0f, 0.0f, 1.0f), mat3);
+    Sphere sphere4(Vector3(-0.5f, -1.0f, 3.2f), 0.5f, Color(0.2f, 0.8f, 0.2f), mat4);
+    Sphere sphere5(Vector3(0.5f, -1.0f, 0.6f), 0.5f, Color(1.0f, 0.64f, 0.0f), mat5);
+    Sphere sphere6(Vector3(0.75f, -1.0f, 2.3f), 0.5f, Color(0.3f, 0.4f, 0.3f), mat6);
+    Sphere sphere7(Vector3(2.4f, -1.0f, 1.0f), 0.5f, Color(0.1f, 0.5f, 0.4f), mat7);
+    Sphere sphere8(Vector3(2.0f, -1.0f, 2.7f), 0.5f, Color(1.0f, 0.84f, 0.4f), mat8);
+
     //Sphere sphere3(Vector3(2.0f, -0.5f, 2.0f), 0.5f, Color(0.2f, 0.8f, 0.3f), mat3);
     
     //Cone cone1(Vector3(-2.0f, 0.0f, -2.0f), 1.0f, 1.0f, Color(0.2f, 0.8f, 0.2f));
@@ -63,7 +78,14 @@ int main() {
     scene.setCamera(camera);
     scene.addLight(std::make_shared<Light>(light));
     scene.addObject(std::make_shared<Sphere>(sphere1));
+    scene.addObject(std::make_shared<Sphere>(sphere11));
     scene.addObject(std::make_shared<Sphere>(sphere2));
+    scene.addObject(std::make_shared<Sphere>(sphere3));
+    scene.addObject(std::make_shared<Sphere>(sphere4));
+    scene.addObject(std::make_shared<Sphere>(sphere5));
+    scene.addObject(std::make_shared<Sphere>(sphere6));
+    scene.addObject(std::make_shared<Sphere>(sphere7));
+    scene.addObject(std::make_shared<Sphere>(sphere8));
     //scene.addObject(std::make_shared<Sphere>(sphere3));
     //scene.addObject(std::make_shared<Cone>(cone1));
     //scene.addObject(std::make_shared<Cone>(cone2));

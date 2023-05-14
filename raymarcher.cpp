@@ -21,6 +21,7 @@ constexpr float AMBIENT_LIGHT_INTENSITY = 0.2f;
 constexpr int NUM_SHADOW_RAYS = 32;
 constexpr float SHADOW_THRESHOLD = 0.1f;
 constexpr float SHADOW_BIAS = 1e-3f;
+constexpr float REFLECT_BIAS = 1e-3f;
 constexpr int MAX_REFLECTION_BOUNCES = 8;
 
 float sphereSDF(const Vector3& point, const Sphere& sphere) {
@@ -143,9 +144,8 @@ Vector3 estimateNormal(const Vector3& point, const std::vector<std::shared_ptr<O
 
 Ray calculateReflectionRay(const Ray& ray, const Vector3& hit_point, const Vector3& normal) {
     Vector3 reflect_dir = ray.getDirection() - 2.0f * ray.getDirection().dot(normal) * normal;
-    return Ray(hit_point + reflect_dir * EPSILON, reflect_dir);
+    return Ray(hit_point + reflect_dir, reflect_dir);
 }
-
 
 Raymarcher::Raymarcher() {}
 
@@ -213,7 +213,7 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray, int depth) {
         } 
 
         // Phong shading for the local color.
-        Color local_color = shade(scene, hit_point, normal, object_material, object_color, ray);
+        Color local_color = shade(scene, hit_point + EPSILON, normal, object_material, object_color, ray);
 
         // If the object is not reflective or we've hit the recursive limit, we're done.
         if (object_material.reflectivity <= 0 || depth >= MAX_REFLECTION_BOUNCES) {
@@ -222,7 +222,7 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray, int depth) {
 
         // Calculate reflection direction and new ray.
         Vector3 reflection_direction = ray.getDirection().reflect(normal).normalized();
-        Ray reflection_ray(hit_point + EPSILON * reflection_direction, reflection_direction);
+        Ray reflection_ray(hit_point + reflection_direction, reflection_direction);
 
         // Recursive call for the reflected color.
         Color reflected_color = trace(scene, reflection_ray, depth + 1);
