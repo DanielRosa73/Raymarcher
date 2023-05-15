@@ -10,6 +10,7 @@
 #include "cube.h"
 #include "torus.h"
 #include "cone.h"
+#include "cubewithhole.h"
 
 
 constexpr int MAX_MARCHING_STEPS = 400;
@@ -18,7 +19,7 @@ constexpr float MAX_DISTANCE = 1e14f;
 constexpr float EPSILON = 1e-6f;
 constexpr int SAMPLES_PER_PIXEL = 10;
 constexpr float AMBIENT_LIGHT_INTENSITY = 0.2f;
-constexpr int NUM_SHADOW_RAYS = 32;
+constexpr int NUM_SHADOW_RAYS = 1;
 constexpr float SHADOW_THRESHOLD = 0.1f;
 constexpr float SHADOW_BIAS = 1e-3f;
 constexpr float REFLECT_BIAS = 1e-3f;
@@ -53,6 +54,15 @@ float coneSDF(const Vector3& point, const Cone& cone) {
 }
 
 
+float cubeWithHoleSDF(const Vector3& point, const CubeWithHole& cubeWithHole) {
+    const Cube& cube = cubeWithHole.getCube();
+    const Sphere& sphere = cubeWithHole.getSphere();
+
+    float cubeSdf = cubeSDF(point, cube);
+    float sphereSdf = sphereSDF(point, sphere);
+
+    return std::max(cubeSdf, -sphereSdf);
+}
 
 
 float sceneSDF(const Vector3& point, const std::vector<std::shared_ptr<Object>>& objects) {
@@ -69,6 +79,8 @@ float sceneSDF(const Vector3& point, const std::vector<std::shared_ptr<Object>>&
             distance = torusSDF(point, *torus);
         } else if (auto cone = std::dynamic_pointer_cast<Cone>(object)) {
             distance = coneSDF(point, *cone);
+        } else if (auto cubeWithHole = std::dynamic_pointer_cast<CubeWithHole>(object)) {
+            distance = cubeWithHoleSDF(point, *cubeWithHole);
         }
         min_distance = std::min(min_distance, distance);
     }
@@ -114,6 +126,11 @@ bool raymarch(const Scene& scene, const Ray& ray, Vector3& hit_point, std::share
                 } else if (auto cone = std::dynamic_pointer_cast<Cone>(object)) {
                     if (std::abs(coneSDF(hit_point, *cone)) < MIN_HIT_DISTANCE) {
                         hit_object = cone;
+                        break;
+                    }
+                } else if (auto cubeWithHole = std::dynamic_pointer_cast<CubeWithHole>(object)) {
+                    if (std::abs(cubeWithHoleSDF(hit_point, *cubeWithHole)) < MIN_HIT_DISTANCE) {
+                        hit_object = cubeWithHole;
                         break;
                     }
                 }
@@ -210,7 +227,10 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray, int depth) {
         } else if (auto torus = std::dynamic_pointer_cast<Torus>(hit_object)) {
             object_color = torus->getColor();
             object_material = torus->getMaterial();
-        } 
+        } else if (auto cubeWithHole = std::dynamic_pointer_cast<CubeWithHole>(hit_object)) {
+                object_color = cubeWithHole->getCube().getColor();
+                object_material = cubeWithHole->getCube().getMaterial();
+        }
 
         // Phong shading for the local color.
         Color local_color = shade(scene, hit_point + EPSILON, normal, object_material, object_color, ray);

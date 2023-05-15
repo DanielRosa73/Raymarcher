@@ -9,6 +9,7 @@
 #include "cube.h"
 #include "torus.h"
 #include "cone.h"
+#include "cubewithhole.h"
 
 #include <vector>
 #include <iostream>
@@ -40,7 +41,7 @@ void write_ppm(const std::string& filename, const std::vector<std::vector<Color>
 }
 
 
-
+/*
 int main() {
     int width = 800;
     int height = 600;
@@ -113,14 +114,14 @@ int main() {
     scene.addObject(cubeTop);
     
 
-    /*
+    
     Vector3 torusCenter(3, -2.5, -10);
     float majorRadius = 1.2f;
     float minorRadius = 0.5f;
     Color torusColor(0.8, 0, 0.2);
     std::shared_ptr<Torus> torus = std::make_shared<Torus>(torusCenter, majorRadius, minorRadius, torusColor, mat);
     scene.addObject(torus);
-    */
+    
     
     
     Vector3 planeNormal(0.0f, 1.0f, 0.0f); // Normal pointing upwards
@@ -132,6 +133,53 @@ int main() {
     std::vector<std::vector<Color>> framebuffer(width, std::vector<Color>(height));
     Raymarcher raymarcher;
     raymarcher.render_antialiasing(scene, framebuffer);
+
+    write_ppm("output.ppm", framebuffer);
+
+    return 0;
+}
+*/
+
+int main() {
+    int width = 800;
+    int height = 600;
+
+    Camera camera(Vector3(2.0f, 1.0f, 7.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
+    Light light(Vector3(0.0f, 7.0f, -3.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
+
+    Material mat1(1.3, 1000, 0.2f);
+
+    Scene scene;
+    scene.setCamera(camera);
+    scene.addLight(std::make_shared<Light>(light));
+
+    
+
+    // Initialize CubeWithHole
+    Vector3 cubeCenter(0, -2, 0); // Center of the cube
+    Vector3 cubeDimensions(2, 2, 2); // Dimensions of the cube
+    Color cubeColor(0.8, 0.2, 0.1); // Color of the cube
+    Cube cube(cubeCenter, cubeDimensions, cubeColor, mat1);
+
+    Vector3 sphereCenter(0, -2, 0); // Center of the sphere
+    float sphereRadius = 1.3; // Radius of the sphere (hole)
+    Color sphereColor(0, 0, 0); // Color of the sphere (not really necessary if the sphere represents the hole)
+    Sphere sphere(sphereCenter, sphereRadius, sphereColor, mat1);
+
+    std::shared_ptr<CubeWithHole> cubeWithHole = std::make_shared<CubeWithHole>(cube, sphere);
+    
+    // Initialize CubeWithHole
+    Vector3 cubeCenter1(3, -1.5, 0); // Center of the cube
+    Vector3 cubeDimensions2(2, 2, 2); // Dimensions of the cube
+
+    Cube cube1(cubeCenter1, cubeDimensions2, cubeColor, mat1);
+    
+    scene.addObject(cubeWithHole);
+    scene.addObject(std::make_shared<Cube>(cube1));
+
+    std::vector<std::vector<Color>> framebuffer(width, std::vector<Color>(height));
+    Raymarcher raymarcher;
+    raymarcher.render(scene, framebuffer);
 
     write_ppm("output.ppm", framebuffer);
 
