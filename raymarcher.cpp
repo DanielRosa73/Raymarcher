@@ -280,26 +280,6 @@ Color Raymarcher::getBackgroundColor(const Ray& ray) const {
     return Color::lerp(Color(1.0f, 1.0f, 1.0f), Color(0.5f, 0.7f, 1.0f), t);
 }
 
-/* This is raytracing
-bool Raymarcher::shadow(const Scene& scene, const Vector3& point, const Light& light) {
-    Vector3 light_direction = (light.getPosition() - point).normalized();
-    Ray shadow_ray(point + light_direction * EPSILON, light_direction);
-    float t = (light.getPosition() - point).length();
-    const auto& objects = scene.getObjects();
-
-    for (const auto& object : objects) {
-        float temp_t;
-        Vector3 temp_normal;
-        Color temp_color;
-
-        if (object->intersect(shadow_ray, temp_t, temp_normal, temp_color) && temp_t < t) {
-            return true;
-        }
-    }
-
-    return false;
-    }
-*/
 
 float Raymarcher::shadow(const Scene& scene, const Vector3& point, const Light& light) {
     int shadowCount = 0;
