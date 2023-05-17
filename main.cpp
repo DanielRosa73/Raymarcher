@@ -10,6 +10,7 @@
 #include "torus.h"
 #include "cone.h"
 #include "cubewithhole.h"
+#include "mandelbulb.h"
 
 #include <vector>
 #include <iostream>
@@ -144,8 +145,8 @@ int main() {
     int width = 800;
     int height = 600;
 
-    Camera camera(Vector3(2.0f, 1.0f, 7.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
-    Light light(Vector3(0.0f, 7.0f, -3.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
+    Camera camera(Vector3(0.0f, 0.0f, 7.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
+    Light light(Vector3(0.0f, 7.0f, 0.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
 
     Material mat1(1.3, 1000, 0.2f);
 
@@ -155,27 +156,23 @@ int main() {
 
     
 
-    // Initialize CubeWithHole
-    Vector3 cubeCenter(0, -2, 0); // Center of the cube
-    Vector3 cubeDimensions(2, 2, 2); // Dimensions of the cube
-    Color cubeColor(0.8, 0.2, 0.1); // Color of the cube
-    Cube cube(cubeCenter, cubeDimensions, cubeColor, mat1);
+    Vector3 center(0,5,3);
+    Color color(1,0,0);
+    int power = 15;
+    float bailout = 1000;
+    Material mat(1,10000,0);
 
-    Vector3 sphereCenter(0, -2, 0); // Center of the sphere
-    float sphereRadius = 1.3; // Radius of the sphere (hole)
-    Color sphereColor(0, 0, 0); // Color of the sphere (not really necessary if the sphere represents the hole)
-    Sphere sphere(sphereCenter, sphereRadius, sphereColor, mat1);
-
-    std::shared_ptr<CubeWithHole> cubeWithHole = std::make_shared<CubeWithHole>(cube, sphere);
+    Mandelbulb mand(center,power,color,mat,bailout);
+    scene.addObject(std::make_shared<Mandelbulb>(mand));
     
-    // Initialize CubeWithHole
-    Vector3 cubeCenter1(3, -1.5, 0); // Center of the cube
-    Vector3 cubeDimensions2(2, 2, 2); // Dimensions of the cube
+    Vector3 planeNormal(0.0f, 1.0f, 0.0f); // Normal pointing upwards
+    float planeDistance = -20.0f; // Distance from the origin (adjust this value as needed)
+    Color planeColor(0.5f, 0.5f, 0.5f); // Ground plane color
+    std::shared_ptr<Object> groundPlane = std::make_shared<Plane>(planeNormal, planeDistance, planeColor);
+    scene.addObject(groundPlane);
 
-    Cube cube1(cubeCenter1, cubeDimensions2, cubeColor, mat1);
-    
-    scene.addObject(cubeWithHole);
-    scene.addObject(std::make_shared<Cube>(cube1));
+    Sphere sphere1(Vector3(3.0f, 0.25f, -4.6f), 1.0f, Color(0.48f, 0.61f, 0.61f), mat);
+    //scene.addObject(std::make_shared<Sphere>(sphere1));
 
     std::vector<std::vector<Color>> framebuffer(width, std::vector<Color>(height));
     Raymarcher raymarcher;

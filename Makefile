@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -O3
 LDFLAGS = -lm
-OBJS = main.o scene.o light.o sphere.o raymarcher.o ray.o camera.o vector3.o color.o object.o plane.o cube.o torus.o cone.o cubewithhole.o
+OBJS = main.o scene.o light.o sphere.o raymarcher.o ray.o camera.o vector3.o color.o object.o plane.o cube.o torus.o cone.o cubewithhole.o mandelbulb.o
 
 raymarcher: $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
@@ -51,7 +51,8 @@ cone.o: cone.cpp cone.h
 cubewithhole.o: cubewithhole.cpp cubewithhole.h
 	$(CXX) $(CXXFLAGS) -c cubewithhole.cpp
 
-
+mandelbulb.o: mandelbulb.cpp mandelbulb.h
+	$(CXX) $(CXXFLAGS) -c mandelbulb.cpp
 
 clean:
 	rm -f *.o raymarcher

@@ -11,6 +11,7 @@
 #include "torus.h"
 #include "cone.h"
 #include "cubewithhole.h"
+#include "mandelbulb.h"
 
 
 constexpr int MAX_MARCHING_STEPS = 400;
@@ -64,6 +65,68 @@ float cubeWithHoleSDF(const Vector3& point, const CubeWithHole& cubeWithHole) {
     return std::max(cubeSdf, -sphereSdf);
 }
 
+float mandelbulbDE(const Vector3& point, const Mandelbulb& mandelbulb) {
+    Vector3 z = point;
+    float dr = 1.0;
+    float r = 0.0;
+
+    int iterations = 100;
+    int power = 8; 
+    float bailout = 2.0;
+    float epsilon = 0.00001;
+
+    for (int i = 0; i < iterations; ++i) {
+        r = z.length();
+        if (r < epsilon) {
+            return -0.5*log(r)*r/dr; // Negative DE inside the fractal
+        }
+        if (r > bailout) {
+            return 0.5*log(r)*r/dr;  // Positive DE outside the fractal
+        }
+
+        // convert to polar coordinates
+        float theta = acos(z.z / r);
+        float phi = atan2(z.y, z.x);
+        dr =  pow(r, power-1.0)*power*dr + 1.0;
+        
+        // scale and rotate the point
+        float zr = pow(r,power);
+        theta = theta*power;
+        phi = phi*power;
+        
+        // convert back to cartesian coordinates
+        z = zr * Vector3(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
+        z += point;
+    }
+    return 0.5*log(r)*r/dr;
+}
+
+float mengerSpongeSDF(const Vector3& point, const Cube& cube) {
+    Vector3 p = point - cube.getCenter();
+    float scale = cube.getDimensions().x; // assuming cube is uniformly scaled
+
+    int iterations = 3; // the number of iterations of the Menger sponge
+
+    for (int i = 0; i < iterations; ++i) {
+        Vector3 a = p.abs();
+        if (a.x < a.y) std::swap(p.x, p.y);
+        if (a.x < a.z) std::swap(p.x, p.z);
+        if (a.y < a.z) std::swap(p.y, p.z);
+        p = Vector3(p.x - scale, p.y - scale * 2.0f, p.z - scale * 2.0f);
+        scale *= 3.0f;
+        p *= 3.0f;
+        Vector3 b = p - Vector3(scale, scale, scale) * 2.0f;
+        Vector3 c = p.abs() - Vector3(scale, scale, scale);
+        float s = std::min(std::max(b.x, b.y), b.z);
+        float t = std::min(std::max(c.x, c.y), c.z);
+        p += Vector3(s, s, s) * (s > 0.0f) + Vector3(t, t, t) * (t < 0.0f);
+    }
+
+    return p.length() * std::pow(3.0f, -iterations);
+}
+
+
+
 
 float sceneSDF(const Vector3& point, const std::vector<std::shared_ptr<Object>>& objects) {
     float min_distance = MAX_DISTANCE;
@@ -81,7 +144,10 @@ float sceneSDF(const Vector3& point, const std::vector<std::shared_ptr<Object>>&
             distance = coneSDF(point, *cone);
         } else if (auto cubeWithHole = std::dynamic_pointer_cast<CubeWithHole>(object)) {
             distance = cubeWithHoleSDF(point, *cubeWithHole);
+        } else if (auto mandelbulb = std::dynamic_pointer_cast<Mandelbulb>(object)) {
+            distance = mandelbulbDE(point, *mandelbulb);
         }
+
         min_distance = std::min(min_distance, distance);
     }
     return min_distance;
@@ -131,6 +197,11 @@ bool raymarch(const Scene& scene, const Ray& ray, Vector3& hit_point, std::share
                 } else if (auto cubeWithHole = std::dynamic_pointer_cast<CubeWithHole>(object)) {
                     if (std::abs(cubeWithHoleSDF(hit_point, *cubeWithHole)) < MIN_HIT_DISTANCE) {
                         hit_object = cubeWithHole;
+                        break;
+                    }
+                } else if (auto mandelbulb = std::dynamic_pointer_cast<Mandelbulb>(object)) {
+                    if (std::abs(mandelbulbDE(hit_point, *mandelbulb)) < MIN_HIT_DISTANCE) {
+                        hit_object = mandelbulb;
                         break;
                     }
                 }
@@ -230,6 +301,9 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray, int depth) {
         } else if (auto cubeWithHole = std::dynamic_pointer_cast<CubeWithHole>(hit_object)) {
                 object_color = cubeWithHole->getCube().getColor();
                 object_material = cubeWithHole->getCube().getMaterial();
+        } else if (auto mandelbulb = std::dynamic_pointer_cast<Mandelbulb>(hit_object)) {
+            object_color = mandelbulb->getColor();
+            object_material = mandelbulb->getMaterial();
         }
 
         // Phong shading for the local color.
