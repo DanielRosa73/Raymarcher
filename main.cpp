@@ -11,6 +11,7 @@
 #include "cone.h"
 #include "cubewithhole.h"
 #include "mandelbulb.h"
+#include "frame.h"
 
 #include <vector>
 #include <iostream>
@@ -145,25 +146,28 @@ int main() {
     int width = 800;
     int height = 600;
 
-    Camera camera(Vector3(0.0f, 0.0f, 7.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
-    Light light(Vector3(0.0f, 7.0f, 0.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
+    Camera camera(Vector3(0.0f, 0.0f, 10.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
+    Light light(Vector3(0.0f, 7.0f, 4.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
+    Light light2(Vector3(5.0f, 7.0f, 2.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
+    Light light3(Vector3(-2.0f, 7.0f, 4.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
+
 
     Material mat1(1.3, 1000, 0.2f);
 
     Scene scene;
     scene.setCamera(camera);
     scene.addLight(std::make_shared<Light>(light));
-
+    //scene.addLight(std::make_shared<Light>(light2));
+    //scene.addLight(std::make_shared<Light>(light3));
     
 
-    Vector3 center(0,5,3);
+    Vector3 center(0,0,0);
     Color color(1,0,0);
-    int power = 15;
-    float bailout = 1000;
-    Material mat(1,10000,0);
+    Material mat(1,1000,0);
+    Vector3 dim(4,4,4);
 
-    Mandelbulb mand(center,power,color,mat,bailout);
-    scene.addObject(std::make_shared<Mandelbulb>(mand));
+  
+
     
     Vector3 planeNormal(0.0f, 1.0f, 0.0f); // Normal pointing upwards
     float planeDistance = -20.0f; // Distance from the origin (adjust this value as needed)
@@ -171,8 +175,10 @@ int main() {
     std::shared_ptr<Object> groundPlane = std::make_shared<Plane>(planeNormal, planeDistance, planeColor);
     scene.addObject(groundPlane);
 
-    Sphere sphere1(Vector3(3.0f, 0.25f, -4.6f), 1.0f, Color(0.48f, 0.61f, 0.61f), mat);
-    //scene.addObject(std::make_shared<Sphere>(sphere1));
+
+    Cube framer(center, dim, color, mat );
+    Frame frame(framer);
+    scene.addObject(std::make_shared<Frame>(frame));
 
     std::vector<std::vector<Color>> framebuffer(width, std::vector<Color>(height));
     Raymarcher raymarcher;

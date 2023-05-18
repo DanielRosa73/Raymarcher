@@ -12,6 +12,7 @@
 #include "cone.h"
 #include "cubewithhole.h"
 #include "mandelbulb.h"
+#include "frame.h"
 
 
 constexpr int MAX_MARCHING_STEPS = 400;
@@ -101,29 +102,42 @@ float mandelbulbDE(const Vector3& point, const Mandelbulb& mandelbulb) {
     return 0.5*log(r)*r/dr;
 }
 
-float mengerSpongeSDF(const Vector3& point, const Cube& cube) {
-    Vector3 p = point - cube.getCenter();
-    float scale = cube.getDimensions().x; // assuming cube is uniformly scaled
 
-    int iterations = 3; // the number of iterations of the Menger sponge
+float FrameSDF(const Vector3& point, const Frame& frame) {
+    float FRAME_THICKNESS = 3;
+    const Cube& cube = frame.getCube();
+    Vector3 dimensions = cube.getDimensions();
+    float dim = dimensions.x;
+    Vector3 innerCenter = cube.getCenter();
+    
 
-    for (int i = 0; i < iterations; ++i) {
-        Vector3 a = p.abs();
-        if (a.x < a.y) std::swap(p.x, p.y);
-        if (a.x < a.z) std::swap(p.x, p.z);
-        if (a.y < a.z) std::swap(p.y, p.z);
-        p = Vector3(p.x - scale, p.y - scale * 2.0f, p.z - scale * 2.0f);
-        scale *= 3.0f;
-        p *= 3.0f;
-        Vector3 b = p - Vector3(scale, scale, scale) * 2.0f;
-        Vector3 c = p.abs() - Vector3(scale, scale, scale);
-        float s = std::min(std::max(b.x, b.y), b.z);
-        float t = std::min(std::max(c.x, c.y), c.z);
-        p += Vector3(s, s, s) * (s > 0.0f) + Vector3(t, t, t) * (t < 0.0f);
+    // Outer cube
+    float outerSDF = cubeSDF(point, cube);
+
+    std::vector<Vector3> rectangleDimensions = {
+        Vector3(dim * 2, FRAME_THICKNESS + EPSILON , FRAME_THICKNESS + EPSILON ), // Along y-axis
+        Vector3(FRAME_THICKNESS + EPSILON, dim * 2, FRAME_THICKNESS + EPSILON), // Along z-axis
+        Vector3(FRAME_THICKNESS + EPSILON, FRAME_THICKNESS + EPSILON, dim * 2)  // Along x-axis
+    };
+
+    std::vector<float> SDFs = {outerSDF};
+
+    for (int i = 0; i < 3; ++i) {
+        Vector3 innerCubeCenter = innerCenter;
+        Cube innerCube(innerCubeCenter, rectangleDimensions[i], cube.getColor(), cube.getMaterial());
+        float innerSDF = cubeSDF(point, innerCube);
+
+        // Subtract from outer SDF
+        SDFs.push_back(-innerSDF);
     }
 
-    return p.length() * std::pow(3.0f, -iterations);
+    // Take the maximum
+    float result = *std::max_element(SDFs.begin(), SDFs.end());
+
+    return result;
 }
+
+
 
 
 
@@ -146,6 +160,8 @@ float sceneSDF(const Vector3& point, const std::vector<std::shared_ptr<Object>>&
             distance = cubeWithHoleSDF(point, *cubeWithHole);
         } else if (auto mandelbulb = std::dynamic_pointer_cast<Mandelbulb>(object)) {
             distance = mandelbulbDE(point, *mandelbulb);
+        } else if (auto frame = std::dynamic_pointer_cast<Frame>(object)) {
+            distance = FrameSDF(point, *frame);
         }
 
         min_distance = std::min(min_distance, distance);
@@ -202,6 +218,11 @@ bool raymarch(const Scene& scene, const Ray& ray, Vector3& hit_point, std::share
                 } else if (auto mandelbulb = std::dynamic_pointer_cast<Mandelbulb>(object)) {
                     if (std::abs(mandelbulbDE(hit_point, *mandelbulb)) < MIN_HIT_DISTANCE) {
                         hit_object = mandelbulb;
+                        break;
+                    }
+                } else if (auto frame = std::dynamic_pointer_cast<Frame>(object)) {
+                    if (std::abs(FrameSDF(hit_point, *frame)) < MIN_HIT_DISTANCE) {
+                        hit_object = frame;
                         break;
                     }
                 }
@@ -304,6 +325,9 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray, int depth) {
         } else if (auto mandelbulb = std::dynamic_pointer_cast<Mandelbulb>(hit_object)) {
             object_color = mandelbulb->getColor();
             object_material = mandelbulb->getMaterial();
+        } else if (auto frame = std::dynamic_pointer_cast<Frame>(hit_object)) {
+            object_color = frame->getCube().getColor();
+            object_material = frame->getCube().getMaterial();
         }
 
         // Phong shading for the local color.
