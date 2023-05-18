@@ -21,7 +21,7 @@ constexpr float MAX_DISTANCE = 1e14f;
 constexpr float EPSILON = 1e-6f;
 constexpr int SAMPLES_PER_PIXEL = 10;
 constexpr float AMBIENT_LIGHT_INTENSITY = 0.2f;
-constexpr int NUM_SHADOW_RAYS = 1;
+constexpr int NUM_SHADOW_RAYS = 32;
 constexpr float SHADOW_THRESHOLD = 0.1f;
 constexpr float SHADOW_BIAS = 1e-3f;
 constexpr float REFLECT_BIAS = 1e-3f;
@@ -309,8 +309,14 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray, int depth) {
         Color object_color;
         Material object_material;
         if (auto sphere = std::dynamic_pointer_cast<Sphere>(hit_object)) {
-            object_color = sphere->getColor();
             object_material = sphere->getMaterial();
+            if (object_material.texture) {
+                float u, v;
+                sphere->getUV(hit_point, u, v);
+                object_color = object_material.texture->getColor(u, v);
+            } else {
+                object_color = sphere->getColor();
+            }
         } else if (auto plane = std::dynamic_pointer_cast<Plane>(hit_object)) {
             object_color = plane->getColor();
         } else if (auto cube = std::dynamic_pointer_cast<Cube>(hit_object)) {
