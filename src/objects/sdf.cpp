@@ -40,34 +40,7 @@ namespace SDF {
         return std::max(cubeSdf, -sphereSdf);
     }
 
-    float mandelbulbDE(const Vector3& point, const Mandelbulb& mandelbulb) {
-        Vector3 z = point;
-        float dr = 1.0;
-        float r = 0.0;
-        int iterations = 100;
-        int power = 8; 
-        float bailout = 2.0;
-        float epsilon = 0.00001;
-
-        for (int i = 0; i < iterations; ++i) {
-            r = z.length();
-            if (r < epsilon) {
-                return -0.5*log(r)*r/dr;
-            }
-            if (r > bailout) {
-                return 0.5*log(r)*r/dr;
-            }
-            float theta = acos(z.z / r);
-            float phi = atan2(z.y, z.x);
-            dr =  pow(r, power-1.0)*power*dr + 1.0;
-            float zr = pow(r,power);
-            theta = theta*power;
-            phi = phi*power;
-            z = zr * Vector3(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
-            z += point;
-        }
-        return 0.5*log(r)*r/dr;
-    }
+    
 
     float frameSDF(const Vector3& point, const Frame& frame) {
         float FRAME_THICKNESS = 3;
@@ -102,4 +75,32 @@ namespace SDF {
 
         return result;
     }
+
+    float mandelbulbDE(const Vector3& point, const Mandelbulb& mandelbulb) {
+        Vector3 z = (point - mandelbulb.getCenter()) / mandelbulb.getScale();
+        Vector3 c = z;
+        float dr = 1.0;
+        float r = 0.0;
+        for (int i = 0; i < 1000 ; i++) {
+            r = z.length();
+            if (r>2) break;
+        
+            // convert to polar coordinates
+            float theta = acos(z.z/r);
+            float phi = atan2(z.y,z.x);
+            dr =  pow( r, mandelbulb.getPower()-1.0)*mandelbulb.getPower()*dr + 1.0;
+            
+            // scale and rotate the point
+            float zr = pow( r,mandelbulb.getPower());
+            theta = theta*mandelbulb.getPower();
+            phi = phi*mandelbulb.getPower();
+            
+            // convert back to cartesian coordinates
+            z = zr*Vector3(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
+            z+=c;
+        }
+        return 0.5*log(r)*r/dr;
+    }
+
+
 }

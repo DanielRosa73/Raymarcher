@@ -23,6 +23,7 @@ namespace SDF {
     float cubeWithHoleSDF(const Vector3& point, const CubeWithHole& cubeWithHole);
     float mandelbulbDE(const Vector3& point, const Mandelbulb& mandelbulb);
     float frameSDF(const Vector3& point, const Frame& frame);
+    float mandelbulbDE(const Vector3& point, const Mandelbulb& mandelbulb);
 };
 
 #endif // SDF_H

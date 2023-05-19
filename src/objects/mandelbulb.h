@@ -1,26 +1,28 @@
 #ifndef MANDELBULB_H
 #define MANDELBULB_H
 
+#include "../utilities/vector3.h"
 #include "object.h"
+#include "../utilities/color.h"
+
 
 class Mandelbulb : public Object {
 public:
-   Mandelbulb(const Vector3& center, int power, const Color& color, const Material& mat, float bailout)
-    : m_center(center), m_power(power), m_color(color), m_material(mat),m_bailout(bailout) {}
-
-
-    const Vector3& getCenter() const { return m_center; }
-    int getPower() const { return m_power; }
-    Color getColor() const {return m_color; }
-    Material getMaterial() const {return m_material; }
-    float getBailout() const { return m_bailout; }
+    Mandelbulb();
+    Mandelbulb(const Vector3& center, float scale, int power, const Color& color, const Material& material);
+    
+    const Vector3& getCenter() const { return center_; }
+    float getScale() const { return scale_; }
+    int getPower() const { return power_; }
+    Color getColor() const { return color_; }
+    Material getMaterial() const {return material_; }
 
 private:
-    Vector3 m_center;
-    int m_power;
-    Color m_color;
-    Material m_material;
-    float m_bailout;
+    Vector3 center_;
+    float scale_;
+    int power_;
+    Color color_;
+    Material material_;
 };
 
 #endif // MANDELBULB_H
