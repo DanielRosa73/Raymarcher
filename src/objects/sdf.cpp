@@ -102,5 +102,49 @@ namespace SDF {
         return 0.5*log(r)*r/dr;
     }
 
+    float mengerSpongeDE(const Vector3& point, const MengerSponge& mengerSponge) {
+        Vector3 z = (point - mengerSponge.getCenter()) / mengerSponge.getScale();
+        float scale = mengerSponge.getScale();
+        int iterations = mengerSponge.getIterations();
+
+        for (int i = 0; i < iterations; ++i) {
+            z.x = fabs(z.x);
+            z.y = fabs(z.y);
+            z.z = fabs(z.z);
+
+            if (z.x - z.y < 0) std::swap(z.x, z.y);
+            if (z.x - z.z < 0) std::swap(z.x, z.z);
+            if (z.y - z.z < 0) std::swap(z.y, z.z);
+
+            z = scale*z - Vector3(scale-1, scale-1, 2*scale-2);
+
+            if (z.z > -0.5*scale) {
+                z.z -= scale;
+            }
+            else if (z.z < -1.5*scale) {
+                z.z += 2*scale;
+            }
+        }
+
+        return (z.length() - 2) / pow(scale, iterations);
+    }
+
+    float mandelboxDE(const Vector3& point, const Mandelbox& mandelbox) {
+        Vector3 z = (point - mandelbox.getCenter()) / mandelbox.getScale();
+        Vector3 c = z;
+        float dr = 1.0;
+
+        for (int i = 0; i < 100; i++) {
+            z = mandelbox.boxFold(z);
+            z = mandelbox.sphereFold(z);
+
+            z = z * mandelbox.getScale() + c;
+            dr = dr * abs(mandelbox.getScale()) + 1.0;
+
+            if (z.length() > 2.0) break;
+        }
+
+        return 0.5 * log(z.length()) * z.length() / dr;
+    }
 
 }

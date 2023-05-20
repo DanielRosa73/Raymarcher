@@ -10,6 +10,8 @@
 #include "cubewithhole.h"
 #include "mandelbulb.h"
 #include "frame.h"
+#include "menger_sponge.h"
+#include "mandelbox.h"
 #include <vector>
 #include <algorithm>
 
@@ -24,6 +26,8 @@ namespace SDF {
     float mandelbulbDE(const Vector3& point, const Mandelbulb& mandelbulb);
     float frameSDF(const Vector3& point, const Frame& frame);
     float mandelbulbDE(const Vector3& point, const Mandelbulb& mandelbulb);
+    float mengerSpongeDE(const Vector3& point, const MengerSponge& mengerSponge);
+    float mandelboxDE(const Vector3& point, const Mandelbox& mandelbox);
 };
 
 #endif // SDF_H

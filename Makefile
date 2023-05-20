@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -O3 -Isrc
+CXXFLAGS = -std=c++17 -Wall -Wextra -O3 -Isrc -fopenmp
 LDFLAGS = -lm
 SRCDIR = src
 OBJDIR = obj

@@ -12,6 +12,8 @@
 #include "objects/cubewithhole.h"
 #include "objects/mandelbulb.h"
 #include "objects/frame.h"
+#include "objects/menger_sponge.h"
+#include "objects/mandelbox.h"
 #include "include/stb_image.h"
 
 #include <vector>
@@ -149,14 +151,14 @@ int main() {
 
 
 
-    Camera camera(Vector3(1.0f, 2.0f, 2.5f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
-    Light light(Vector3(0.0f, 3.5f, 1.0f), Color(1.0f, 1.0f, 1.0f), 0.2f);
+    Camera camera(Vector3(2.0f, 5.0f, 10.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
+    Light light(Vector3(1.0f, 15.5f, 5.0f), Color(1.0f, 1.0f, 1.0f), 0.2f);
     Light light2(Vector3(5.0f, 7.0f, 2.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
     Light light3(Vector3(-2.0f, 7.0f, 4.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
 
 
     Material mat1(1.3, 1000, 0.2f);
-    Material mat(1,10000,0);
+    Material mat(1,10000,0.0f);
 
     Scene scene;
     scene.setCamera(camera);
@@ -164,9 +166,22 @@ int main() {
     
 
 
+    Vector3 center(0.0, 0.0, 0.0); // The center of the mandelbox. This is usually (0,0,0) as it's the center of the fractal.
+    float scale = -1.5; // The scale factor. This is usually negative. Try different values for different results, but -1.5 is a good starting point.
+
+    // You can change the color to whatever you like. This example uses a light blue color.
+    Color color(0.5, 0.5, 1.0);
+
+    Mandelbox mandelbox(center, scale, color, mat);
+    scene.addObject(std::make_shared<Mandelbox>(mandelbox));
+
+        
+    //MengerSponge menger(Vector3(0,0,0), 4.0f, 3.0f, Color(1,0,1),mat);
+    //scene.addObject(std::make_shared<MengerSponge>(menger));
+
     // Initialize the Mandelbulb with these values
-     Mandelbulb mandelbulb(Vector3(0,0,0),1.0f, 6, Color(1,0,1),mat);
-    scene.addObject(std::make_shared<Mandelbulb>(mandelbulb));
+    //Mandelbulb mandelbulb(Vector3(0,0,0),1.0f, 8, Color(1.0f,0.0f,1.0f),mat);
+    //scene.addObject(std::make_shared<Mandelbulb>(mandelbulb));
 
     std::vector<std::vector<Color>> framebuffer(width, std::vector<Color>(height));
     Raymarcher raymarcher;

@@ -13,8 +13,12 @@
 #include "../objects/cone.h"
 #include "../objects/cubewithhole.h"
 #include "../objects/mandelbulb.h"
+#include "../objects/menger_sponge.h"
 #include "../objects/frame.h"
+#include "../objects/mandelbox.h"
 
+
+#include <omp.h>
 
 constexpr int MAX_MARCHING_STEPS = 400;
 constexpr float MIN_HIT_DISTANCE = 1e-4f;
@@ -50,6 +54,10 @@ float sceneSDF(const Vector3& point, const std::vector<std::shared_ptr<Object>>&
             distance = SDF::mandelbulbDE(point, *mandelbulb);
         } else if (auto frame = std::dynamic_pointer_cast<Frame>(object)) {
             distance = SDF::frameSDF(point, *frame);
+        } else if (auto mengerSponge = std::dynamic_pointer_cast<MengerSponge>(object)) {
+            distance = SDF::mengerSpongeDE(point, *mengerSponge);
+        } else if (auto mandelbox = std::dynamic_pointer_cast<Mandelbox>(object)) {
+            distance = SDF::mandelboxDE(point, *mandelbox);
         }
 
         min_distance = std::min(min_distance, distance);
@@ -113,6 +121,16 @@ bool raymarch(const Scene& scene, const Ray& ray, Vector3& hit_point, std::share
                         hit_object = frame;
                         break;
                     }
+                } else if (auto mengerSponge = std::dynamic_pointer_cast<MengerSponge>(object)) {
+                    if (std::abs(SDF::mengerSpongeDE(hit_point, *mengerSponge)) < MIN_HIT_DISTANCE) {
+                        hit_object = mengerSponge;
+                        break;
+                    }
+                } else if (auto mandelbox = std::dynamic_pointer_cast<Mandelbox>(object)) {
+                    if (std::abs(SDF::mandelboxDE(hit_point, *mandelbox)) < MIN_HIT_DISTANCE) {
+                        hit_object = mandelbox;
+                        break;
+                    }
                 }
             }
 
@@ -153,6 +171,7 @@ void Raymarcher::render(const Scene& scene, std::vector<std::vector<Color>>& fra
     int width = framebuffer.size();
     int height = framebuffer[0].size();
 
+    #pragma omp parallel for schedule(dynamic)
     for (int i = 0; i < width; ++i) {
         for (int j = 0; j < height; ++j) {
             float u = float(i) / float(width);
@@ -222,6 +241,12 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray, int depth) {
         } else if (auto frame = std::dynamic_pointer_cast<Frame>(hit_object)) {
             object_color = frame->getCube().getColor();
             object_material = frame->getCube().getMaterial();
+        } else if (auto mengerSponge = std::dynamic_pointer_cast<MengerSponge>(hit_object)) {
+            object_color = mengerSponge->getColor();
+            object_material = mengerSponge->getMaterial();
+        } else if (auto mandelbox = std::dynamic_pointer_cast<Mandelbox>(hit_object)) {
+            object_color = mandelbox->getColor();
+            object_material = mandelbox->getMaterial();
         }
 
         // Phong shading for the local color.
@@ -289,7 +314,8 @@ Color Raymarcher::shade(const Scene& scene, const Vector3& point, const Vector3&
 Color Raymarcher::getBackgroundColor(const Ray& ray) const {
     Vector3 unitDirection = ray.getDirection().normalized();
     float t = 0.5f * (unitDirection.y + 1.0f);
-    return Color::lerp(Color(1.0f, 1.0f, 1.0f), Color(0.5f, 0.7f, 1.0f), t);
+    Color sky = Color(0.04f,0.28f,0.68f);
+    return Color::lerp(Color(1.0f, 1.0f, 1.0f), sky, t);
 }
 
 
@@ -322,10 +348,6 @@ float Raymarcher::shadow(const Scene& scene, const Vector3& point, const Light& 
 
     return (float)shadowCount / NUM_SHADOW_RAYS;
 }
-
-
-
-
 
 
 
