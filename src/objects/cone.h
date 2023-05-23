@@ -13,6 +13,8 @@ public:
     float getHeight() const { return m_height; }
     float getRadius() const { return m_radius; }
     float SDF(const Vector3& point) const override;
+    void getUV(const Vector3& p, float& u, float& v) const override {std::cout << p.x << u << v << std::endl;}
+
 
 private:
     Vector3 m_center;

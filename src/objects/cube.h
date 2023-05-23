@@ -12,7 +12,7 @@ public:
     const Vector3& getCenter() const { return m_center; }
     const Vector3& getDimensions() const { return m_dimensions; }
     float SDF(const Vector3& point) const override;
-
+    void getUV(const Vector3& p, float& u, float& v) const override {std::cout << p.x << u << v << std::endl;}
 private:
     Vector3 m_center;
     Vector3 m_dimensions;

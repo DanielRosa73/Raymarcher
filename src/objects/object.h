@@ -21,10 +21,11 @@ struct Material {
 
 class Object {
 public:
-    virtual ~Object() {}
+    //virtual ~Object() {}
     virtual float SDF(const Vector3& point) const = 0;
     virtual Color getColor() const {return m_color; }
     virtual Material getMaterial() const {return m_material; }
+    virtual void getUV(const Vector3& p, float& u, float& v) const = 0;
  
 protected:
     Color m_color;

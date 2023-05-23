@@ -13,6 +13,7 @@ public:
     const Cube& getCube() const { return m_cube; }
     const Sphere& getSphere() const { return m_sphere; }
     float SDF(const Vector3& point) const override;
+    void getUV(const Vector3& p, float& u, float& v) const override {std::cout << p.x << u << v << std::endl;}
 
 private:
     Cube m_cube;

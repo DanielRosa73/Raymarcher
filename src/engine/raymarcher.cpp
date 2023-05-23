@@ -137,40 +137,16 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray, int depth) {
 
     if (hit && hit_object) {
         Vector3 normal = estimateNormal(hit_point, scene.getObjects());
+        Material object_material = hit_object->getMaterial();
         Color object_color;
-        Material object_material;
-        if (auto sphere = std::dynamic_pointer_cast<Sphere>(hit_object)) {
-            object_material = sphere->getMaterial();
-            if (object_material.texture) {
-                float u, v;
-                sphere->getUV(hit_point, u, v);
-                object_color = object_material.texture->getColor(u, v);
-            } else {
-                object_color = sphere->getColor();
-            }
-        } else if (auto plane = std::dynamic_pointer_cast<Plane>(hit_object)) {
-            object_color = plane->getColor();
-        } else if (auto cube = std::dynamic_pointer_cast<Cube>(hit_object)) {
-            object_color = cube->getColor();
-            object_material = cube->getMaterial();
-        } else if (auto torus = std::dynamic_pointer_cast<Torus>(hit_object)) {
-            object_color = torus->getColor();
-            object_material = torus->getMaterial();
-        } else if (auto cubeWithHole = std::dynamic_pointer_cast<CubeWithHole>(hit_object)) {
-                object_color = cubeWithHole->getCube().getColor();
-                object_material = cubeWithHole->getCube().getMaterial();
-        } else if (auto mandelbulb = std::dynamic_pointer_cast<Mandelbulb>(hit_object)) {
-            object_color = mandelbulb->getColor();
-            object_material = mandelbulb->getMaterial();
-        } else if (auto frame = std::dynamic_pointer_cast<Frame>(hit_object)) {
-            object_color = frame->getCube().getColor();
-            object_material = frame->getCube().getMaterial();
-        } else if (auto mengerSponge = std::dynamic_pointer_cast<MengerSponge>(hit_object)) {
-            object_color = mengerSponge->getColor();
-            object_material = mengerSponge->getMaterial();
-        } else if (auto mandelbox = std::dynamic_pointer_cast<Mandelbox>(hit_object)) {
-            object_color = mandelbox->getColor();
-            object_material = mandelbox->getMaterial();
+
+        // If the material has a texture, calculate the color from the texture.
+        if (object_material.texture) {
+            float u, v;
+            hit_object->getUV(hit_point, u, v);
+            object_color = object_material.texture->getColor(u, v);
+        } else {
+            object_color = hit_object->getColor();
         }
 
         // Phong shading for the local color.
@@ -196,6 +172,7 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray, int depth) {
         return getBackgroundColor(ray);
     }
 }
+
 
 
 

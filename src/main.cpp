@@ -151,8 +151,8 @@ int main() {
 
 
 
-    Camera camera(Vector3(2.0f, 5.0f, 10.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
-    Light light(Vector3(1.0f, 15.5f, 5.0f), Color(1.0f, 1.0f, 1.0f), 0.2f);
+    Camera camera(Vector3(2.0f, 2.0f, 3.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
+    Light light(Vector3(0.0f, 7.0f, 1.5f), Color(1.0f, 1.0f, 1.0f), 0.2f);
     Light light2(Vector3(5.0f, 7.0f, 2.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
     Light light3(Vector3(-2.0f, 7.0f, 4.0f), Color(1.0f, 1.0f, 1.0f), 0.1f);
 
@@ -171,9 +171,10 @@ int main() {
 
     // You can change the color to whatever you like. This example uses a light blue color.
     Color color(0.5, 0.5, 1.0);
-    Sphere sphere1(Vector3(-1.75f, 0.25f, -1.6f), 1.6f, Color(0.48f, 0.61f, 0.61f), mat);
-    std::cout << "sphere created" << std::endl;
-    scene.addObject(std::make_shared<Sphere>(sphere1));
+    Sphere sphere1(Vector3(-2.75f, 0.25f, -0.1f), 0.6f, Color(0.48f, 0.61f, 0.61f), mat);
+    //std::cout << "sphere created" << std::endl;
+    //scene.addObject(std::make_shared<Sphere>(sphere1));
+
     //Mandelbox mandelbox(center, scale, color, mat);
     //scene.addObject(std::make_shared<Mandelbox>(mandelbox));
 
@@ -182,8 +183,8 @@ int main() {
     //scene.addObject(std::make_shared<MengerSponge>(menger));
 
     // Initialize the Mandelbulb with these values
-    //Mandelbulb mandelbulb(Vector3(0,0,0),1.0f, 8, Color(1.0f,0.0f,1.0f),mat);
-    //scene.addObject(std::make_shared<Mandelbulb>(mandelbulb));
+    Mandelbulb mandelbulb(Vector3(0,0,0),1.0f, 8, Color(1.0f,0.0f,1.0f),mat);
+    scene.addObject(std::make_shared<Mandelbulb>(mandelbulb));
 
     std::vector<std::vector<Color>> framebuffer(width, std::vector<Color>(height));
     Raymarcher raymarcher;
