@@ -9,15 +9,14 @@ class Plane : public Object {
 public:
     
     Plane();
-    Plane(const Vector3& normal, float distance, const Color& color);
+    Plane(const Vector3& normal, float distance, const Color& color, const Material& mat);
 
    
     Vector3 getNormal() const { return m_normal; }
     float getDistance() const { return m_distance; }
-    Color getColor() const { return m_color; }
+    float SDF(const Vector3& point) const override;
 
 private:
     Vector3 m_normal;
     float m_distance;
-    Color m_color;
 };

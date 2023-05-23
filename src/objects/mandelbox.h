@@ -10,18 +10,15 @@ public:
     Mandelbox();
     Mandelbox(const Vector3& center, float scale, const Color& color, const Material& material);
     
-    const Vector3& getCenter() const { return center_; }
-    float getScale() const { return scale_; }
-    Color getColor() const { return color_; }
-    Material getMaterial() const {return material_; }
+    const Vector3& getCenter() const { return m_center; }
+    float getScale() const { return m_scale; }
     Vector3 boxFold(const Vector3& v) const;
     Vector3 sphereFold(const Vector3& v) const;
+    float SDF(const Vector3& point) const override;
 
 private:
-    Vector3 center_;
-    float scale_;
-    Color color_;
-    Material material_;
+    Vector3 m_center;
+    float m_scale;
 };
 
 #endif // MANDELBOX_H

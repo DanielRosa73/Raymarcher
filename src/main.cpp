@@ -167,13 +167,15 @@ int main() {
 
 
     Vector3 center(0.0, 0.0, 0.0); // The center of the mandelbox. This is usually (0,0,0) as it's the center of the fractal.
-    float scale = -1.5; // The scale factor. This is usually negative. Try different values for different results, but -1.5 is a good starting point.
+    //float scale = -1.5; // The scale factor. This is usually negative. Try different values for different results, but -1.5 is a good starting point.
 
     // You can change the color to whatever you like. This example uses a light blue color.
     Color color(0.5, 0.5, 1.0);
-
-    Mandelbox mandelbox(center, scale, color, mat);
-    scene.addObject(std::make_shared<Mandelbox>(mandelbox));
+    Sphere sphere1(Vector3(-1.75f, 0.25f, -1.6f), 1.6f, Color(0.48f, 0.61f, 0.61f), mat);
+    std::cout << "sphere created" << std::endl;
+    scene.addObject(std::make_shared<Sphere>(sphere1));
+    //Mandelbox mandelbox(center, scale, color, mat);
+    //scene.addObject(std::make_shared<Mandelbox>(mandelbox));
 
         
     //MengerSponge menger(Vector3(0,0,0), 4.0f, 3.0f, Color(1,0,1),mat);

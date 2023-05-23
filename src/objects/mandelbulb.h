@@ -11,18 +11,15 @@ public:
     Mandelbulb();
     Mandelbulb(const Vector3& center, float scale, int power, const Color& color, const Material& material);
     
-    const Vector3& getCenter() const { return center_; }
-    float getScale() const { return scale_; }
-    int getPower() const { return power_; }
-    Color getColor() const { return color_; }
-    Material getMaterial() const {return material_; }
+    const Vector3& getCenter() const { return m_center; }
+    float getScale() const { return m_scale; }
+    int getPower() const { return m_power; }
+    float SDF(const Vector3& point) const override;
 
 private:
-    Vector3 center_;
-    float scale_;
-    int power_;
-    Color color_;
-    Material material_;
+    Vector3 m_center;
+    float m_scale;
+    int m_power;
 };
 
 #endif // MANDELBULB_H

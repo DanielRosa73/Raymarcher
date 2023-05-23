@@ -3,8 +3,11 @@
 
 Mandelbox::Mandelbox() {}
 
-Mandelbox::Mandelbox(const Vector3& center, float scale, const Color& color, const Material& material)
-    : center_(center), scale_(scale), color_(color), material_(material) {}
+Mandelbox::Mandelbox(const Vector3& center, float scale, const Color& color, const Material& mat)
+    : m_center(center), m_scale(scale) {
+        this->m_color = color;
+        this->m_material = mat;
+    }
 
 Vector3 Mandelbox::boxFold(const Vector3& v) const {
     Vector3 result = v;
@@ -35,3 +38,20 @@ Vector3 Mandelbox::sphereFold(const Vector3& v) const {
     return result;
 }
 
+float Mandelbox::SDF(const Vector3& point) const {
+        Vector3 z = (point - m_center) / m_scale;
+        Vector3 c = z;
+        float dr = 1.0;
+
+        for (int i = 0; i < 100; i++) {
+            z = boxFold(z);
+            z = sphereFold(z);
+
+            z = z * m_scale + c;
+            dr = dr * abs(m_scale) + 1.0;
+
+            if (z.length() > 2.0) break;
+        }
+
+        return 0.5 * log(z.length()) * z.length() / dr;
+}

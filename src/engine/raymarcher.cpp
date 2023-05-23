@@ -37,38 +37,11 @@ constexpr int MAX_REFLECTION_BOUNCES = 8;
 float sceneSDF(const Vector3& point, const std::vector<std::shared_ptr<Object>>& objects) {
     float min_distance = MAX_DISTANCE;
     for (const auto& object : objects) {
-        float distance;
-        if (auto sphere = std::dynamic_pointer_cast<Sphere>(object)) {
-            distance = SDF::sphereSDF(point, *sphere);
-        } else if (auto plane = std::dynamic_pointer_cast<Plane>(object)) {
-            distance = SDF::planeSDF(point, *plane);
-        } else if (auto cube = std::dynamic_pointer_cast<Cube>(object)) {
-            distance = SDF::cubeSDF(point, *cube);
-        } else if (auto torus = std::dynamic_pointer_cast<Torus>(object)) {
-            distance = SDF::torusSDF(point, *torus);
-        } else if (auto cone = std::dynamic_pointer_cast<Cone>(object)) {
-            distance = SDF::coneSDF(point, *cone);
-        } else if (auto cubeWithHole = std::dynamic_pointer_cast<CubeWithHole>(object)) {
-            distance = SDF::cubeWithHoleSDF(point, *cubeWithHole);
-        } else if (auto mandelbulb = std::dynamic_pointer_cast<Mandelbulb>(object)) {
-            distance = SDF::mandelbulbDE(point, *mandelbulb);
-        } else if (auto frame = std::dynamic_pointer_cast<Frame>(object)) {
-            distance = SDF::frameSDF(point, *frame);
-        } else if (auto mengerSponge = std::dynamic_pointer_cast<MengerSponge>(object)) {
-            distance = SDF::mengerSpongeDE(point, *mengerSponge);
-        } else if (auto mandelbox = std::dynamic_pointer_cast<Mandelbox>(object)) {
-            distance = SDF::mandelboxDE(point, *mandelbox);
-        }
-
+        float distance = object->SDF(point);
         min_distance = std::min(min_distance, distance);
     }
     return min_distance;
 }
-
-
-
-
-
 
 
 bool raymarch(const Scene& scene, const Ray& ray, Vector3& hit_point, std::shared_ptr<Object>& hit_object) {
@@ -79,62 +52,12 @@ bool raymarch(const Scene& scene, const Ray& ray, Vector3& hit_point, std::share
         float distance = sceneSDF(hit_point, scene.getObjects());
 
         if (distance < MIN_HIT_DISTANCE) {
-            hit_object = nullptr;
             for (const auto& object : scene.getObjects()) {
-                if (auto sphere = std::dynamic_pointer_cast<Sphere>(object)) {
-                    if (std::abs(SDF::sphereSDF(hit_point, *sphere)) < MIN_HIT_DISTANCE) {
-                        hit_object = sphere;
-                        break;
-                    }
-                } else if (auto plane = std::dynamic_pointer_cast<Plane>(object)) {
-                    if (std::abs(SDF::planeSDF(hit_point, *plane)) < MIN_HIT_DISTANCE) {
-                        hit_object = plane;
-                        break;
-                    }
-                } else if (auto cube = std::dynamic_pointer_cast<Cube>(object)) {
-                    if (std::abs(SDF::cubeSDF(hit_point, *cube)) < MIN_HIT_DISTANCE) {
-                        hit_object = cube;
-                        break;
-                    }
-                } else if (auto torus = std::dynamic_pointer_cast<Torus>(object)) {
-                    if (std::abs(SDF::torusSDF(hit_point, *torus)) < MIN_HIT_DISTANCE) {
-                        hit_object = torus;
-                        break;
-                    }
-                } else if (auto cone = std::dynamic_pointer_cast<Cone>(object)) {
-                    if (std::abs(SDF::coneSDF(hit_point, *cone)) < MIN_HIT_DISTANCE) {
-                        hit_object = cone;
-                        break;
-                    }
-                } else if (auto cubeWithHole = std::dynamic_pointer_cast<CubeWithHole>(object)) {
-                    if (std::abs(SDF::cubeWithHoleSDF(hit_point, *cubeWithHole)) < MIN_HIT_DISTANCE) {
-                        hit_object = cubeWithHole;
-                        break;
-                    }
-                } else if (auto mandelbulb = std::dynamic_pointer_cast<Mandelbulb>(object)) {
-                    if (std::abs(SDF::mandelbulbDE(hit_point, *mandelbulb)) < MIN_HIT_DISTANCE) {
-                        hit_object = mandelbulb;
-                        break;
-                    }
-                } else if (auto frame = std::dynamic_pointer_cast<Frame>(object)) {
-                    if (std::abs(SDF::frameSDF(hit_point, *frame)) < MIN_HIT_DISTANCE) {
-                        hit_object = frame;
-                        break;
-                    }
-                } else if (auto mengerSponge = std::dynamic_pointer_cast<MengerSponge>(object)) {
-                    if (std::abs(SDF::mengerSpongeDE(hit_point, *mengerSponge)) < MIN_HIT_DISTANCE) {
-                        hit_object = mengerSponge;
-                        break;
-                    }
-                } else if (auto mandelbox = std::dynamic_pointer_cast<Mandelbox>(object)) {
-                    if (std::abs(SDF::mandelboxDE(hit_point, *mandelbox)) < MIN_HIT_DISTANCE) {
-                        hit_object = mandelbox;
-                        break;
-                    }
+                if (std::abs(object->SDF(hit_point)) < MIN_HIT_DISTANCE) {
+                    hit_object = object;
+                    return true;
                 }
             }
-
-            return true;
         }
 
         total_distance += distance;
@@ -146,6 +69,7 @@ bool raymarch(const Scene& scene, const Ray& ray, Vector3& hit_point, std::share
 
     return false;
 }
+
 
 
 Vector3 estimateNormal(const Vector3& point, const std::vector<std::shared_ptr<Object>>& objects) {

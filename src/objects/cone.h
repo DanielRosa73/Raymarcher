@@ -6,19 +6,19 @@
 class Cone : public Object {
 public:
     Cone();
-    Cone(const Vector3& center, float height, float radius, const Color& color);
+    Cone(const Vector3& center, float height, float radius, const Color& color, const Material& mat);
 
     
     const Vector3& getCenter() const { return m_center; }
     float getHeight() const { return m_height; }
     float getRadius() const { return m_radius; }
-    Color getColor() const {return m_color; }
+    float SDF(const Vector3& point) const override;
 
 private:
     Vector3 m_center;
     float m_height;
     float m_radius;
-    Color m_color;
+    
 };
 
 #endif // CONE_H

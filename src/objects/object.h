@@ -22,6 +22,13 @@ struct Material {
 class Object {
 public:
     virtual ~Object() {}
+    virtual float SDF(const Vector3& point) const = 0;
+    virtual Color getColor() const {return m_color; }
+    virtual Material getMaterial() const {return m_material; }
+ 
+protected:
+    Color m_color;
+    Material m_material;
 };
 
 #endif // OBJECT_H

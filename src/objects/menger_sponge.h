@@ -10,18 +10,15 @@ public:
     MengerSponge();
     MengerSponge(const Vector3& center, float scale, int iterations, const Color& color, const Material& material);
     
-    const Vector3& getCenter() const { return center_; }
-    float getScale() const { return scale_; }
-    int getIterations() const { return iterations_; }
-    Color getColor() const { return color_; }
-    Material getMaterial() const {return material_; }
+    const Vector3& getCenter() const { return m_center; }
+    float getScale() const { return m_scale; }
+    int getIterations() const { return m_iterations; }
+    float SDF(const Vector3& point) const override;
 
 private:
-    Vector3 center_;
-    float scale_;
-    int iterations_;
-    Color color_;
-    Material material_;
+    Vector3 m_center;
+    float m_scale;
+    int m_iterations;
 };
 
 #endif // MENGER_SPONGE_H

@@ -12,6 +12,7 @@ public:
 
     const Cube& getCube() const { return m_cube; }
     const Sphere& getSphere() const { return m_sphere; }
+    float SDF(const Vector3& point) const override;
 
 private:
     Cube m_cube;
