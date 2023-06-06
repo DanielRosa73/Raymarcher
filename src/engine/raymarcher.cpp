@@ -4,7 +4,6 @@
 #include "scene.h"
 #include "../utilities/color.h"
 #include "../utilities/vector3.h"
-#include "../objects/sdf.h"
 #include "../objects/sphere.h"
 #include "../objects/cube.h"
 #include "../objects/plane.h"
