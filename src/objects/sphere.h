@@ -12,7 +12,7 @@ public:
     float getRadius() const { return m_radius; }
     float SDF(const Vector3& point) const override;
 
-    // Calculate UV coordinates for a point on the sphere
+    
     void getUV(const Vector3& p, float& u, float& v) const override;
 
 private:

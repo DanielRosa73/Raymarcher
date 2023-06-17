@@ -7,7 +7,7 @@
 
 class CubeWithHole : public Object {
 public:
-    //CubeWithHole();
+    
     CubeWithHole(const Cube& cube, const Sphere& sphere);
 
     const Cube& getCube() const { return m_cube; }

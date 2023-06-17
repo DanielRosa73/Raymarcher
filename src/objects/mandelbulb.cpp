@@ -21,17 +21,17 @@ float Mandelbulb::SDF(const Vector3& point) const {
             r = z.length();
             if (r>2) break;
         
-            // convert to polar coordinates
+            
             float theta = acos(z.z/r);
             float phi = atan2(z.y,z.x);
             dr =  pow( r, m_power -1.0)*m_power*dr + 1.0;
             
-            // scale and rotate the point
+          
             float zr = pow( r,m_power);
             theta = theta*m_power;
             phi = phi*m_power;
             
-            // convert back to cartesian coordinates
+            
             z = zr*Vector3(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
             z+=c;
         }

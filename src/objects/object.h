@@ -11,7 +11,7 @@ struct Material {
     float diffuse;
     float specular;
     float reflectivity;
-    std::shared_ptr<ImageTexture> texture;  // Optional texture
+    std::shared_ptr<ImageTexture> texture;  
 
     Material() : diffuse(1), specular(1), reflectivity(0), texture(nullptr) {}
     Material(float diffuse, float specular, float reflectivity) : diffuse(diffuse), specular(specular), reflectivity(reflectivity), texture(nullptr) {}
@@ -21,7 +21,7 @@ struct Material {
 
 class Object {
 public:
-    //virtual ~Object() {}
+   
     virtual float SDF(const Vector3& point) const = 0;
     virtual Color getColor() const {return m_color; }
     virtual Material getMaterial() const {return m_material; }
