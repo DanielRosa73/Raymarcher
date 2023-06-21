@@ -45,7 +45,7 @@ void write_ppm(const std::string& filename, const std::vector<std::vector<Color>
 }
 
 
-
+/*
 int main() {
     int width = 800;
     int height = 600;
@@ -87,7 +87,7 @@ int main() {
     
     
     scene.addLight(std::make_shared<Light>(light));
-    /*
+    
     scene.addObject(std::make_shared<Sphere>(sphere1));
     scene.addObject(std::make_shared<Sphere>(sphere11));
     scene.addObject(std::make_shared<Sphere>(sphere2));
@@ -97,7 +97,7 @@ int main() {
     scene.addObject(std::make_shared<Sphere>(sphere6));
     scene.addObject(std::make_shared<Sphere>(sphere7));
     scene.addObject(std::make_shared<Sphere>(sphere8));
-    */
+    
 
     
     
@@ -111,7 +111,7 @@ int main() {
     Vector3 cubeDimensions3(10, 1, 10);
     Color cubeColor1(0.05, 0.05, 0.05);
     Color cubeColor2(0.05, 0.05, 0.05);
-    /*
+    
     std::shared_ptr<Cube> cubeL = std::make_shared<Cube>(cubeCenterL, cubeDimensions, cubeColor1, mat);
     std::shared_ptr<Cube> cubeR = std::make_shared<Cube>(cubeCenterR, cubeDimensions, cubeColor1, mat);
     std::shared_ptr<Cube> cubeBack = std::make_shared<Cube>(cubeCenterBack, cubeDimensions2, cubeColor2, mat);
@@ -122,7 +122,7 @@ int main() {
     scene.addObject(cubeBack);
     scene.addObject(cubeBot);
     scene.addObject(cubeTop);
-    */
+    
 
 
     std::vector<std::vector<Color>> framebuffer(width, std::vector<Color>(height));
@@ -133,23 +133,28 @@ int main() {
 
     return 0;
 }
+*/
 
 
 
-/*
 // Main for the mandelbulb
-
+/*
 int main() {
     int width = 800;
     int height = 600;
 
 
-    //Full view
-    //Camera camera(Vector3(0.0f, 2.0f, 2.5f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
+    //Camera camera(Vector3(0.0f, 0.0f, 0.4f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
     
-    //Bottom zoomed in view
-    Camera camera(Vector3(0.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
-    
+    //Zoomed in
+    //Camera camera(Vector3(0.0f, 1.0f, 0.2f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
+
+    //Bottom view
+    //Camera camera(Vector3(0.0f, 0.0f, 2.4f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
+
+    //Full View
+    Camera camera(Vector3(0.0f, 2.0f, 2.4f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
+
     Light light(Vector3(0.0f, 7.0f, 1.5f), Color(1.0f, 1.0f, 1.0f), 0.2f);
 
     Material mat(1,10000,0.0f);
@@ -171,3 +176,97 @@ int main() {
     return 0;
 }
 */
+
+
+//Main for Space
+/*
+int main() {
+    int width = 800;
+    int height = 600;
+
+    Camera camera(Vector3(0.0f, 1.5f, 7.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
+    Light light(Vector3(-2.5f, 7.0f, -1.8f), Color(1.0f, 1.0f, 1.0f), 1.0f);
+
+
+    Material soft(1, 10000,0.0f);
+   
+    std::shared_ptr<ImageTexture> moon = std::make_shared<ImageTexture>("src/textures/moon.png");
+    std::shared_ptr<ImageTexture> mars = std::make_shared<ImageTexture>("src/textures/mars.png");
+    Material mooon(1,1000,0, moon);
+    Material maars(1,100000000,0, mars);
+
+ 
+    Sphere sphere1(Vector3(0.9, -0.1f, 4.6f), 1.8f, Color(1.0f, 0.84f, 0.0f), maars);
+    Sphere sphere11(Vector3(-2.5f, 3.9f, -3.0f), 0.8f, Color(0.75f, 0.75f, 0.575f), mooon);
+    Torus torus(Vector3(0.9, 0.4f, 4.6f), 2.4, 0.2 ,Color(0.7,0.2,0.17), soft);
+ 
+    Scene scene;
+    scene.setCamera(camera);
+
+    scene.addLight(std::make_shared<Light>(light));
+    
+    scene.addObject(std::make_shared<Sphere>(sphere1));
+    scene.addObject(std::make_shared<Torus>(torus));
+    scene.addObject(std::make_shared<Sphere>(sphere11));
+
+    std::vector<std::vector<Color>> framebuffer(width, std::vector<Color>(height));
+    Raymarcher raymarcher;
+    raymarcher.render(scene, framebuffer);
+    write_ppm("output.ppm", framebuffer);
+    return 0;
+}
+*/
+
+
+//Main for cube
+int main() {
+    int width = 800;
+    int height = 600;
+
+    Camera camera(Vector3(0.0f, 1.5f, 5.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), 60.0f, float(width) / float(height));
+    Light light(Vector3(-2.5f, 7.0f, -1.8f), Color(1.0f, 1.0f, 1.0f), 1.0f);
+
+
+    Material soft(1, 10000,0.0f);
+   
+    std::shared_ptr<ImageTexture> cob = std::make_shared<ImageTexture>("src/textures/cobble.png");
+    Material cobble(1,1000,0, cob);
+
+    std::shared_ptr<ImageTexture> obs = std::make_shared<ImageTexture>("src/textures/obsidian.png");
+    Material obsidian(1,1000,0, obs);
+
+    std::shared_ptr<ImageTexture> dia = std::make_shared<ImageTexture>("src/textures/diamond.png");
+    Material diamond(1,1000,0, dia);
+
+    std::shared_ptr<ImageTexture> gol = std::make_shared<ImageTexture>("src/textures/gold.png");
+    Material gold(1,1000,0.1, gol);
+
+
+    Cube cube1(Vector3(0.7,0.51,0), Vector3(1,1,1), Color(1,0,0), cobble);
+    Cube cube2(Vector3(-0.7,0.51,0), Vector3(1,1,1), Color(1,0,0), diamond);
+    Cube cube3(Vector3(-2.1,0.51,0), Vector3(1,1,1), Color(1,0,0), obsidian);
+    Cube cube4(Vector3(2.1,0.51,0), Vector3(1,1,1), Color(1,0,0), gold);
+
+
+    
+    Scene scene;
+    scene.setCamera(camera);
+
+    scene.addLight(std::make_shared<Light>(light));
+    
+    Plane plane(Vector3(0,1,0), 0, Color(0.5,0.5,0.5), soft);
+    scene.addObject(std::make_shared<Plane>(plane));
+
+    scene.addObject(std::make_shared<Cube>(cube1));
+    scene.addObject(std::make_shared<Cube>(cube2));
+    scene.addObject(std::make_shared<Cube>(cube3));
+    scene.addObject(std::make_shared<Cube>(cube4));
+
+
+
+    std::vector<std::vector<Color>> framebuffer(width, std::vector<Color>(height));
+    Raymarcher raymarcher;
+    raymarcher.render(scene, framebuffer);
+    write_ppm("output.ppm", framebuffer);
+    return 0;
+}

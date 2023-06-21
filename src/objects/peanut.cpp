@@ -15,9 +15,8 @@ float Peanut::SDF(const Vector3& point) const {
     return std::min(d1, d2) - h*h*0.25f/m_smoothness;
 }
 
+//Just a placeholder
 void Peanut::getUV(const Vector3& p, float& u, float& v) const {
-    // UV calculation can be complex based on the shape, as placeholder.
-    // Detailed implementation would be based on your requirement of texture mapping.
     u = 0.5 + atan2(p.z, p.x) / (2.0 * M_PI);
     v = 0.5 - asin(p.y) / M_PI;
 }

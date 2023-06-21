@@ -181,6 +181,8 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray, int depth) {
         return local_color * (1.0f - object_material.reflectivity) + reflected_color * object_material.reflectivity;
     } 
     else {
+        if (BLACK == true)
+            return getBackgroundColorBlack(ray);
         if (NIGHT == true)
             return getNightBackgroundColor(ray);
         return getBackgroundColor(ray);
@@ -248,7 +250,17 @@ Color Raymarcher::getNightBackgroundColor(const Ray& ray) const {
     return color;
 }
 
+Color Raymarcher::getBackgroundColorBlack(const Ray& ray) const {
+    
+    Color starColor = Color(1.0f, 1.0f, 1.0f); 
 
+    Color color(0,0,0);
+
+    float random = ((static_cast<float>(rand()) / static_cast<float>(RAND_MAX)) < 0.001f) ? 1.0f : 0.0f;
+
+    color = color * (0.3f - random) + starColor * random;
+    return color;
+}
 
 float Raymarcher::shadow(const Scene& scene, const Vector3& point, const Light& light) {
     int shadowCount = 0;
