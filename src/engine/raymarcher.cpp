@@ -6,6 +6,7 @@
 #include "../utilities/vector3.h"
 #include "../objects/sphere.h"
 #include "../objects/cube.h"
+#include "../config.h"
 #include "../objects/plane.h"
 #include "../objects/cube.h"
 #include "../objects/torus.h"
@@ -13,21 +14,13 @@
 #include "../objects/mandelbulb.h"
 #include "../objects/frame.h"
 #include "../objects/mandelbox.h"
+#include "../objects/peanut.h"
+
 
 
 #include <omp.h>
 
-constexpr int MAX_MARCHING_STEPS = 400;
-constexpr float MIN_HIT_DISTANCE = 1e-4f;
-constexpr float MAX_DISTANCE = 1e14f;
-constexpr float EPSILON = 1e-6f;
-constexpr int SAMPLES_PER_PIXEL = 10;
-constexpr float AMBIENT_LIGHT_INTENSITY = 0.2f;
-constexpr int NUM_SHADOW_RAYS = 1;
-constexpr float SHADOW_THRESHOLD = 0.1f;
-constexpr float SHADOW_BIAS = 1e-3f;
-constexpr float REFLECT_BIAS = 1e-3f;
-constexpr int MAX_REFLECTION_BOUNCES = 8;
+
 
 
 
@@ -109,7 +102,7 @@ void Raymarcher::render_antialiasing(const Scene& scene, std::vector<std::vector
     int width = framebuffer.size();
     int height = framebuffer[0].size();
 
-    
+    #pragma omp parallel for schedule(dynamic)
     for (int i = 0; i < width; ++i) {
         for (int j = 0; j < height; ++j) {
             Color pixel_color(0.0f, 0.0f, 0.0f);
@@ -123,6 +116,30 @@ void Raymarcher::render_antialiasing(const Scene& scene, std::vector<std::vector
         }
     }
 }
+
+void Raymarcher::render_MSAA(const Scene& scene, std::vector<std::vector<Color>>& framebuffer) {
+    const Camera& camera = scene.getCamera();
+    int width = framebuffer.size();
+    int height = framebuffer[0].size();
+
+    for (int i = 0; i < width; ++i) {
+        for (int j = 0; j < height; ++j) {
+            Color pixel_color(0.0f, 0.0f, 0.0f);
+            
+            
+            for (int m = 0; m < sqrt(SAMPLES_PER_PIXEL); ++m) {
+                for (int n = 0; n < sqrt(SAMPLES_PER_PIXEL); ++n) {
+                    float u = (i + (m / sqrt(SAMPLES_PER_PIXEL)) + (rand() / (RAND_MAX + 1.0))) / width;
+                    float v = (j + (n / sqrt(SAMPLES_PER_PIXEL)) + (rand() / (RAND_MAX + 1.0))) / height;
+                    Ray ray = camera.getRay(u, v);
+                    pixel_color += trace(scene, ray, 0);
+                }
+            }
+            framebuffer[i][j] = pixel_color / float(SAMPLES_PER_PIXEL);
+        }
+    }
+}
+
 
 
 
@@ -164,6 +181,8 @@ Color Raymarcher::trace(const Scene& scene, const Ray& ray, int depth) {
         return local_color * (1.0f - object_material.reflectivity) + reflected_color * object_material.reflectivity;
     } 
     else {
+        if (NIGHT == true)
+            return getNightBackgroundColor(ray);
         return getBackgroundColor(ray);
     }
 }
@@ -213,6 +232,22 @@ Color Raymarcher::getBackgroundColor(const Ray& ray) const {
     Color sky = Color(0.04f,0.28f,0.68f);
     return Color::lerp(Color(1.0f, 1.0f, 1.0f), sky, t);
 }
+
+Color Raymarcher::getNightBackgroundColor(const Ray& ray) const {
+    Vector3 unitDirection = ray.getDirection().normalized();
+    float t = 0.5f * (unitDirection.y + 1.0f);
+    Color nightSky = Color(0.005f, 0.005f, 0.02f); 
+    Color starColor = Color(1.0f, 1.0f, 1.0f); 
+
+    Color color = Color::lerp(starColor, nightSky, t);
+
+    float random = ((static_cast<float>(rand()) / static_cast<float>(RAND_MAX)) < 0.01f) ? 1.0f : 0.0f;
+
+    color = color * (0.3f - random) + starColor * random;
+
+    return color;
+}
+
 
 
 float Raymarcher::shadow(const Scene& scene, const Vector3& point, const Light& light) {
